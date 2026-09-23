@@ -1,10 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUNG THÙY PHẠM - Hệ Thống Chấm Công</title>
+    <!-- Font chữ Serif & Sans-serif cao cấp từ Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-black: #121212;
+            --accent-gold: #c5a059;
+            --light-gold: #e6ca65;
+            --bg-gray: #f8f7f5;
+            --card-bg: #ffffff;
+            --border-color: #e2dfd8;
+            --text-dark: #222222;
+            --text-muted: #777777;
+            --success-color: #2e7d32;
+            --danger-color: #c62828;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        body { 
+            background-color: var(--bg-gray); 
+            font-family: 'Montserrat', sans-serif; 
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Luxury Header Section */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 35px;
+            width: 100%;
+            max-width: 950px;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .brand-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--primary-black);
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .brand-divider {
+            width: 60px;
+            height: 1px;
+            background-color: var(--accent-gold);
+            margin: 12px auto;
+        }
+
+        .brand-contact {
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .brand-contact span {
+            color: var(--primary-black);
+            font-weight: 600;
+        }
+
+        /* Layout Container */
+        .container { 
+            max-width: 950px; 
+            width: 100%; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px; 
+        }
+
+        @media (max-width: 768px) { 
+            .container { grid-template-columns: 1fr; } 
+            .brand-title { font-size: 30px; }
+        }
+
+        /* Card Styling */
+        .card { 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 4px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+            border: 1px solid var(--border-color);
+        }
+
+        h2 { 
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px; 
+            color: var(--primary-black); 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 10px; 
+            text-align: center;
+        }
+
+        /* Status Banners */
+        .status-banner {
+            display: none;
+            background-color: #fef8ec;
+            color: #8a6d3b;
+            border: 1px solid #f5e7c6;
+            padding: 10px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .location-info {
+            font-size: 11px;
+            padding: 10px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .loc-loading { background-color: #f2f2f2; color: #666; }
+        .loc-success { background-color: #eaf5ea; color: var(--success-color); border: 1px solid #c8e6c9; }
+        .loc-error { background-color: #fdeaea; color: var(--danger-color); border: 1px solid #ffcdd2; }
+
+        /* Input Form */
+        .form-group { margin-top: 10px; }
+        .field { margin-bottom: 20px; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--primary-black); 
+            font-size: 11px; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 2px; 
+            font-size: 13px; 
+            font-family: 'Montserrat', sans-serif;
+            background-color: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background-color: #fff;
+        }
+
+        input:disabled { 
+            background-color: #f0f0f0; 
+            cursor: not-allowed; 
+            color: #777; 
+            font-weight: 600; 
+        }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 15px; margin-top: 25px; }
+        
+        .btn { 
+            flex: 1; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 2px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 12px; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease; 
+        }
+
+        .btn-in { 
+            background-color: var(--primary-black); 
+            border: 1px solid var(--primary-black);
+        }
+
+        .btn-in:hover:not(:disabled) { 
+            background-color: var(--accent-gold); 
+            border-color: var(--accent-gold);
+        }
+
+        .btn-out { 
+            background-color: transparent; 
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .btn-out:hover:not(:disabled) { 
+            background-color: var(--danger-color); 
+            color: white;
+        }
+
+        .btn:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+            border-color: #ccc;
+            background-color: #eee;
+            color: #888;
+        }
+
+        /* History Logs */
+        .log-list { max-height: 380px; overflow-y: auto; }
+        
+        .log-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 15px 0; 
+            border-bottom: 1px solid #f0f0f0; 
+        }
+
+        .log-info { flex: 1; }
+        
+        .log-name { 
+            font-weight: 600; 
+            color: var(--primary-black); 
+            font-size: 13px; 
+        }
+
+        .log-id { 
+            font-size: 11px; 
+            color: var(--accent-gold); 
+            font-weight: 600; 
+            margin-left: 5px;
+        }
+
+        .log-time { 
+            font-size: 11px; 
+            color: var(--text-muted); 
+            margin-top: 4px; 
+        }
+
+        .badge { 
+            padding: 4px 10px; 
+            border-radius: 2px; 
+            font-size: 10px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600; 
+        }
+
+        .bg-in { background-color: #eaf5ea; color: var(--success-color); }
+        .bg-out { background-color: #fdeaea; color: var(--danger-color); }
+    </style>
+</head>
+<body>
+
+<div class="brand-header">
+    <div class="brand-subtitle">HAUTE COUTURE & FASHION</div>
+    <h1 class="brand-title">DUNG THÙY PHẠM</h1>
+    <div class="brand-divider"></div>
+    <div class="brand-contact">
+        📍 <span>168 Hải Thượng Lãn Ông, Hạc Thành, Thanh Hóa</span><br>
+        📞 HOTLINE: <span>0962811996</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Chấm Công Trực Tuyến</h2>
+
+        <div id="statusBanner" class="status-banner">
+            🔒 ĐANG TRONG CA LÀM VIỆC
+        </div>
+
+        <div id="locationStatus" class="location-info loc-loading">
+            🔄 Đang xác thực vị trí GPS...
+        </div>
+        
+        <div class="form-group">
+            <div class="field">
+                <label for="empId">Mã Nhân Viên</label>
+                <input type="text" id="empId" placeholder="VD: NV01">
+            </div>
+
+            <div class="field">
+                <label for="empName">Họ và Tên</label>
+                <input type="text" id="empName" placeholder="VD: Nguyễn Văn A">
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-in" id="btnIn" onclick="handleCheckIn()" disabled>Vào Ca</button>
+                <button class="btn btn-out" id="btnOut" onclick="handleCheckOut()" disabled>Hết Ca</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Lịch Sử Chấm Công</h2>
+        <div class="log-list" id="logs"></div>
+    </div>
+</div>
+
 <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysrVV4Nog6ppJvZ5RqPrIHag-LIAMwOdteaTa9i9Ny9wse63IOqAYtFsTfN4euJ4Gl1A/exec";
 
-    // 1. TỌA ĐỘ MẶC ĐỊNH CỬA HÀNG VÀ BÁN KÍNH CHO PHÉP (ĐƠN VỊ: MÉT)
+    // 1. TỌA ĐỘ MẶC ĐỊNH CỬA HÀNG VÀ BÁN KÍNH CHO PHÉP (MÉT)
     const STORE_LAT = 19.780000;
     const STORE_LNG = 105.770000;
-    const MAX_ALLOWED_DISTANCE_METERS = 50; // Cho phép chấm công trong bán kính 50m
+    const MAX_ALLOWED_DISTANCE_METERS = 50; // Khoảng cách tối đa 50m tính từ cửa hàng
 
     const logsContainer = document.getElementById('logs');
     const empIdInput = document.getElementById('empId');
@@ -17,7 +348,7 @@
     let currentLocation = null;
     let isWithinRange = false;
 
-    // Hàm tính khoảng cách giữa 2 tọa độ GPS (Công thức Haversine)
+    // 2. HÀM TÍNH KHOẢNG CÁCH GIỮA 2 TỌA ĐỘ GPS (CÔNG THỨC HAVERSINE)
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371e3; // Bán kính Trái Đất tính bằng mét
         const φ1 = lat1 * Math.PI / 180;
@@ -30,7 +361,7 @@
                   Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return R * c; // Khoảng cách tính bằng mét
+        return R * c; // Khoảng cách mét
     }
 
     function requestLocation() {
@@ -48,7 +379,7 @@
                 const lngStr = userLng.toFixed(6);
                 currentLocation = `${latStr}, ${lngStr} (https://maps.google.com/?q=${latStr},${lngStr})`;
 
-                // Tính khoảng cách tới cửa hàng
+                // Tính khoảng cách tới vị trí cửa hàng
                 const distance = calculateDistance(userLat, userLng, STORE_LAT, STORE_LNG);
 
                 if (distance <= MAX_ALLOWED_DISTANCE_METERS) {
@@ -57,7 +388,7 @@
                     checkCurrentState();
                 } else {
                     isWithinRange = false;
-                    updateLocationStatus(`❌ Bạn đang ở quá xa cửa hàng (${Math.round(distance)}m). Không thể chấm công!`, "error");
+                    updateLocationStatus(`❌ Đang ở quá xa cửa hàng (${Math.round(distance)}m). Không thể chấm công!`, "error");
                     btnIn.disabled = true;
                     btnOut.disabled = true;
                 }
@@ -188,3 +519,6 @@
 
     requestLocation();
 </script>
+
+</body>
+</html>
