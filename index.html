@@ -330,7 +330,8 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysrVV4Nog6ppJvZ5RqPrIHag-LIAMwOdteaTa9i9Ny9wse63IOqAYtFsTfN4euJ4Gl1A/exec";
+    // URL API mới đã được cập nhật
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby24MTqKBvuzIqF1eisjfaoXtF6LWVlK8T00ASTCmROgf6eoVbigWCo2h_jSL8mJPcZTw/exec";
 
     // 1. TỌA ĐỘ MẶC ĐỊNH CỬA HÀNG VÀ BÁN KÍNH CHO PHÉP (MÉT)
     const STORE_LAT = 19.780000;
@@ -475,6 +476,7 @@
         statusBanner.style.display = 'none';
     }
 
+    // Hàm gửi dữ liệu tối ưu xử lý CORS
     async function sendAttendance(type, empId, name) {
         const now = new Date();
         const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
@@ -492,12 +494,20 @@
         addLogToUI(empId, name, `${timeStr} (${dateStr})`, type);
 
         try {
-            await fetch(GOOGLE_SCRIPT_URL, {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'text/plain;charset=utf-8' 
+                },
                 body: JSON.stringify(payload)
             });
+
+            const resData = await response.json();
+            if (resData.result === 'success') {
+                console.log("Đã lưu chấm công thành công vào Google Sheet!");
+            } else {
+                console.error("Lỗi từ Apps Script:", resData.error);
+            }
         } catch (error) {
             console.error("Lỗi gửi dữ liệu:", error);
         }
