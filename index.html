@@ -368,6 +368,7 @@
     function requestLocation() {
         if (!navigator.geolocation) {
             updateLocationStatus("❌ Trình duyệt không hỗ trợ định vị GPS!", "error");
+            checkCurrentState();
             return;
         }
 
@@ -386,13 +387,11 @@
                 if (distance <= MAX_ALLOWED_DISTANCE_METERS) {
                     isWithinRange = true;
                     updateLocationStatus(`📍 Vị trí hợp lệ (${Math.round(distance)}m từ cửa hàng)`, "success");
-                    checkCurrentState();
                 } else {
                     isWithinRange = false;
-                    updateLocationStatus(`❌ Đang ở quá xa cửa hàng (${Math.round(distance)}m). Không thể chấm công!`, "error");
-                    btnIn.disabled = true;
-                    btnOut.disabled = true;
+                    updateLocationStatus(`❌ Đang ở quá xa cửa hàng (${Math.round(distance)}m).`, "error");
                 }
+                checkCurrentState();
             },
             (error) => {
                 let errorMsg = "❌ Yêu cầu bật quyền GPS để chấm công!";
@@ -400,8 +399,7 @@
                     errorMsg = "❌ Bạn đã từ chối quyền vị trí. Vui lòng bật GPS!";
                 }
                 updateLocationStatus(errorMsg, "error");
-                btnIn.disabled = true;
-                btnOut.disabled = true;
+                checkCurrentState();
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -413,8 +411,6 @@
     }
 
     function checkCurrentState() {
-        if (!currentLocation || !isWithinRange) return;
-
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
         if (activeShift) {
             lockUI(activeShift.empId, activeShift.empName);
@@ -442,18 +438,24 @@
     }
 
     async function handleCheckOut() {
-        if (!currentLocation || !isWithinRange) { 
-            alert("Bạn đang ở ngoài phạm vi cho phép của cửa hàng!"); 
-            return; 
+        const activeShift = JSON.parse(localStorage.getItem('activeShift'));
+        if (!activeShift) {
+            alert("Không tìm thấy thông tin ca làm việc đang mở!");
+            return;
         }
 
-        const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        if (activeShift) return;
+        if (!currentLocation || !isWithinRange) { 
+            if (!confirm("Vị trí GPS chưa xác nhận hoặc đang ở ngoài phạm vi cửa hàng. Bạn vẫn muốn báo Hết Ca?")) {
+                return;
+            }
+        }
 
+        btnOut.disabled = true; // Khóa nút tạm thời để tránh bấm nhiều lần
         await sendAttendance('Hết ca', activeShift.empId, activeShift.empName);
 
         localStorage.removeItem('activeShift');
         unlockUI();
+        alert("Đã kết thúc ca làm việc thành công!");
     }
 
     function lockUI(empId, name) {
@@ -462,7 +464,7 @@
         empIdInput.disabled = true;
         empNameInput.disabled = true;
         btnIn.disabled = true;
-        btnOut.disabled = !isWithinRange;
+        btnOut.disabled = false; // Luôn mở khóa nút Hết Ca khi đã vào ca
         statusBanner.style.display = 'block';
     }
 
@@ -487,7 +489,7 @@
             empName: name,
             dateStr: dateStr,
             timeStr: timeStr,
-            location: currentLocation,
+            location: currentLocation || 'Chưa xác định GPS',
             type: type
         };
 
