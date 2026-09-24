@@ -439,7 +439,7 @@
         <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
             <div class="field">
                 <label for="loginEmpId">Mã Nhân Viên (Hoặc admin)</label>
-                <input type="text" id="loginEmpId" required placeholder="Nhập mã NV">
+                <input type="text" id="loginEmpId" required placeholder="VD: NV01 hoặc admin">
             </div>
             <div class="field">
                 <label for="loginPassword">Mật khẩu</label>
@@ -448,7 +448,7 @@
             <button type="submit" class="btn btn-primary">Đăng Nhập</button>
         </form>
 
-        <!-- Form Đăng Ký (ĐÃ BỎ TÊN ĐĂNG NHẬP) -->
+        <!-- Form Đăng Ký -->
         <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
             <div class="field">
                 <label for="regEmpId">Mã Nhân Viên</label>
@@ -560,7 +560,8 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysrVV4Nog6ppJvZ5RqPrIHag-LIAMwOdteaTa9i9Ny9wse63IOqAYtFsTfN4euJ4Gl1A/exec";
+    // URL Google Apps Script Mới
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYQ48B3Un2zxno6hhMWj0x8kx7bZZ8jWLekPGe7e7PePK4If5cdFf8yGNXt_WSneSX9A/exec";
 
     // Tọa độ mặc định và giới hạn bán kính (mét)
     const TARGET_LAT = 19.778790;
@@ -601,8 +602,8 @@
         }
     }
 
-    // --- Đăng Ký Tài Khoản ---
-    function handleRegister(e) {
+    // --- Đăng Ký Tài Khoản (Đã kết nối Google Sheet) ---
+    async function handleRegister(e) {
         e.preventDefault();
         const empId = document.getElementById('regEmpId').value.trim().toUpperCase();
         const empName = document.getElementById('regEmpName').value.trim();
@@ -616,15 +617,34 @@
         let users = JSON.parse(localStorage.getItem('users') || '[]');
         
         if (users.some(u => u.empId === empId)) {
-            alert("Mã Nhân Viên này đã được đăng ký!");
+            alert("Mã Nhân Viên này đã được đăng ký trên thiết bị này!");
             return;
         }
 
+        // 1. Lưu tại máy cục bộ (localStorage)
         const newUser = { empId, empName, password };
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
 
-        alert("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+        // 2. Gửi tài khoản lên tab 'TaiKhoan' trên Google Sheet
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'register',
+                    empId: empId,
+                    empName: empName,
+                    password: password
+                })
+            });
+            alert("Đăng ký thành công và đã lưu vào Trang tính!");
+        } catch (err) {
+            console.error("Lỗi gửi dữ liệu đăng ký:", err);
+            alert("Đăng ký hoàn tất cục bộ!");
+        }
+
         document.getElementById('registerForm').reset();
         switchAuthTab('login');
     }
@@ -923,7 +943,7 @@
         logsContainer.prepend(logItem);
     }
 
-    // Chạy kiểm tra phiên làm việc khi load trang
+    // Khởi tạo phiên làm việc khi tải trang
     initSession();
 </script>
 
