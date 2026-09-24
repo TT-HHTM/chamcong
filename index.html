@@ -45,7 +45,7 @@
             text-align: center;
             margin-bottom: 35px;
             width: 100%;
-            max-width: 950px;
+            max-width: 1000px;
         }
 
         .brand-subtitle {
@@ -89,7 +89,7 @@
 
         /* Layout Container */
         .container { 
-            max-width: 950px; 
+            max-width: 1000px; 
             width: 100%; 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -154,11 +154,11 @@
 
         /* Input Form */
         .form-group { margin-top: 10px; }
-        .field { margin-bottom: 20px; }
+        .field { margin-bottom: 15px; }
         
         label { 
             display: block; 
-            margin-bottom: 8px; 
+            margin-bottom: 6px; 
             font-weight: 600; 
             color: var(--primary-black); 
             font-size: 11px; 
@@ -183,15 +183,8 @@
             background-color: #fff;
         }
 
-        input:disabled { 
-            background-color: #f0f0f0; 
-            cursor: not-allowed; 
-            color: #777; 
-            font-weight: 600; 
-        }
-
         /* Buttons */
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; }
+        .btn-group { display: flex; gap: 15px; margin-top: 20px; }
         
         .btn { 
             flex: 1; 
@@ -236,10 +229,60 @@
             color: #888;
         }
 
-        /* History Logs */
-        .log-list { max-height: 380px; overflow-y: auto; }
+        /* Switch auth mode text */
+        .auth-switch {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .auth-switch a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* User Profile Box */
+        .user-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fdfbf7;
+            border: 1px solid var(--accent-gold);
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        .user-panel span { font-weight: 600; color: var(--primary-black); }
+
+        .user-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .action-link {
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .link-pass { color: var(--accent-gold); }
+        .link-pass:hover { text-decoration: underline; }
+
+        .link-logout { color: var(--danger-color); }
+        .link-logout:hover { text-decoration: underline; }
+
+        /* History & Admin Tables */
+        .log-list, .admin-list { max-height: 380px; overflow-y: auto; }
         
-        .log-item { 
+        .log-item, .admin-item { 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
@@ -247,26 +290,48 @@
             border-bottom: 1px solid #f0f0f0; 
         }
 
-        .log-info { flex: 1; }
+        .log-info, .admin-info { flex: 1; }
         
-        .log-name { 
+        .log-name, .admin-name { 
             font-weight: 600; 
             color: var(--primary-black); 
             font-size: 13px; 
         }
 
-        .log-id { 
+        .log-id, .admin-id { 
             font-size: 11px; 
             color: var(--accent-gold); 
             font-weight: 600; 
             margin-left: 5px;
         }
 
-        .log-time { 
+        .log-time, .admin-detail { 
             font-size: 11px; 
             color: var(--text-muted); 
             margin-top: 4px; 
         }
+
+        .admin-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+        }
+
+        .btn-sm-edit { background-color: var(--accent-gold); color: white; }
+        .btn-sm-edit:hover { background-color: #b08d4c; }
+
+        .btn-sm-del { background-color: var(--danger-color); color: white; }
+        .btn-sm-del:hover { background-color: #a31d1d; }
 
         .badge { 
             padding: 4px 10px; 
@@ -279,6 +344,7 @@
 
         .bg-in { background-color: #eaf5ea; color: var(--success-color); }
         .bg-out { background-color: #fdeaea; color: var(--danger-color); }
+        .bg-admin { background-color: #fef8ec; color: #8a6d3b; border: 1px solid #f5e7c6; }
         
         .realtime-indicator { 
             font-size: 10px; 
@@ -302,26 +368,54 @@
 </div>
 
 <div class="container">
+    <!-- KHUNG ĐĂNG NHẬP / CHẤM CÔNG / ADMIN -->
     <div class="card">
-        <h2>Chấm Công Trực Tuyến</h2>
+        <h2 id="formTitle">Đăng Nhập Hệ Thống</h2>
 
-        <div id="statusBanner" class="status-banner">
-            🔒 ĐANG TRONG CA LÀM VIỆC
+        <!-- FORM XÁC THỰC TÀI KHOẢN -->
+        <div id="authBox">
+            <div class="form-group">
+                <div class="field" id="nameField" style="display:none;">
+                    <label for="regName">Họ và Tên</label>
+                    <input type="text" id="regName" placeholder="VD: Nguyễn Văn A">
+                </div>
+
+                <div class="field">
+                    <label for="authEmpId">Mã Nhân Viên</label>
+                    <input type="text" id="authEmpId" placeholder="nhập mã NV">
+                </div>
+
+                <div class="field">
+                    <label for="authPassword">Mật Khẩu</label>
+                    <input type="password" id="authPassword" placeholder="Nhập mật khẩu">
+                </div>
+
+                <button class="btn btn-in" id="authBtn" onclick="handleAuthSubmit()" style="width:100%;">Đăng Nhập</button>
+                
+                <div class="auth-switch">
+                    <span id="switchText">Chưa có tài khoản?</span> 
+                    <a id="switchBtn" onclick="toggleAuthMode()">Đăng ký ngay</a>
+                </div>
+            </div>
         </div>
 
-        <div id="locationStatus" class="location-info loc-loading">
-            🔄 Đang xác thực vị trí GPS...
-        </div>
-        
-        <div class="form-group">
-            <div class="field">
-                <label for="empId">Mã Nhân Viên</label>
-                <input type="text" id="empId" placeholder="VD: NV01">
+        <!-- KHUNG CHẤM CÔNG (DÀNH CHO NHÂN VIÊN) -->
+        <div id="attendanceBox" style="display: none;">
+            <div class="user-panel">
+                <div>Xin chào, <span id="currentUserName"></span> (<span id="currentUserId"></span>)</div>
+                <div class="user-actions">
+                    <a class="action-link link-pass" onclick="openChangePasswordModal()">Đổi mật khẩu</a>
+                    <span style="color:#ddd;">|</span>
+                    <a class="action-link link-logout" onclick="handleLogout()">Đăng xuất</a>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="empName">Họ và Tên</label>
-                <input type="text" id="empName" placeholder="VD: Nguyễn Văn A">
+            <div id="statusBanner" class="status-banner">
+                🔒 ĐANG TRONG CA LÀM VIỆC
+            </div>
+
+            <div id="locationStatus" class="location-info loc-loading">
+                🔄 Đang xác thực vị trí GPS...
             </div>
             
             <div class="btn-group">
@@ -329,8 +423,41 @@
                 <button class="btn btn-out" id="btnOut" onclick="handleCheckOut()" disabled>Hết Ca</button>
             </div>
         </div>
+
+        <!-- KHUNG QUẢN LÝ (DÀNH CHO ADMIN) -->
+        <div id="adminBox" style="display: none;">
+            <div class="user-panel">
+                <div>Xin chào, <span style="color:var(--accent-gold);">QUẢN TRỊ VIÊN</span></div>
+                <div class="user-actions">
+                    <a class="action-link link-pass" onclick="openChangePasswordModal()">Đổi mật khẩu</a>
+                    <span style="color:#ddd;">|</span>
+                    <a class="action-link link-logout" onclick="handleLogout()">Đăng xuất</a>
+                </div>
+            </div>
+            <div style="font-size:12px; margin-bottom:15px; font-weight:600; color:var(--text-muted);">DANH SÁCH NHÂN VIÊN TRONG HỆ THỐNG:</div>
+            <div class="admin-list" id="adminUserList">
+                <div style="text-align:center; color:#888; font-size:12px; padding:20px;">Đang tải danh sách nhân viên...</div>
+            </div>
+        </div>
+
+        <!-- FORM ĐỔI MẬT KHẨU -->
+        <div id="changePassBox" style="display: none;">
+            <div class="field">
+                <label for="oldPassword">Mật Khẩu Cũ</label>
+                <input type="password" id="oldPassword" placeholder="Nhập mật khẩu cũ">
+            </div>
+            <div class="field">
+                <label for="newPassword">Mật Khẩu Mới</label>
+                <input type="password" id="newPassword" placeholder="Nhập mật khẩu mới">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-in" onclick="submitChangePassword()">Xác Nhận</button>
+                <button class="btn btn-out" onclick="closeChangePasswordModal()">Hủy</button>
+            </div>
+        </div>
     </div>
 
+    <!-- LỊCH SỬ CHẤM CÔNG -->
     <div class="card">
         <h2>Lịch Sử Chấm Công <span class="realtime-indicator">● Real-time Firebase</span></h2>
         <div class="log-list" id="logs">
@@ -339,12 +466,11 @@
     </div>
 </div>
 
-<!-- Tích hợp Firebase SDK & Logic Chấm Công Real-time -->
+<!-- Tích hợp Firebase SDK & Logic Hệ Thống -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Cấu hình Firebase của bạn
     const firebaseConfig = {
         apiKey: "AIzaSyBwALvjs3G2cvRv7ersooMgKcd70bTelbg",
         authDomain: "chamcong-ca1f3.firebaseapp.com",
@@ -355,29 +481,241 @@
         measurementId: "G-CHXECV7F1D"
     };
 
-    // Khởi tạo Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 1. TỌA ĐỘ MẶC ĐỊNH CỬA HÀNG VÀ BÁN KÍNH CHO PHÉP (MÉT)
     const STORE_LAT = 19.780000;
     const STORE_LNG = 105.770000;
-    const MAX_ALLOWED_DISTANCE_METERS = 300; // Khoảng cách tối đa 300m tính từ cửa hàng
+    const MAX_ALLOWED_DISTANCE_METERS = 300;
 
-    const logsContainer = document.getElementById('logs');
-    const empIdInput = document.getElementById('empId');
-    const empNameInput = document.getElementById('empName');
-    const btnIn = document.getElementById('btnIn');
-    const btnOut = document.getElementById('btnOut');
-    const statusBanner = document.getElementById('statusBanner');
-    const locationStatus = document.getElementById('locationStatus');
-
+    let isRegisterMode = false;
+    let currentUserRole = 'staff';
     let currentLocation = null;
     let isWithinRange = false;
 
-    // 2. HÀM TÍNH KHOẢNG CÁCH GIỮA 2 TỌA ĐỘ GPS (CÔNG THỨC HAVERSINE)
+    window.toggleAuthMode = function() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('formTitle').innerText = isRegisterMode ? "Đăng Ký Tài Khoản" : "Đăng Nhập Hệ Thống";
+        document.getElementById('nameField').style.display = isRegisterMode ? "block" : "none";
+        document.getElementById('authBtn').innerText = isRegisterMode ? "Đăng Ký" : "Đăng Nhập";
+        document.getElementById('switchText').innerText = isRegisterMode ? "Đã có tài khoản?" : "Chưa có tài khoản?";
+        document.getElementById('switchBtn').innerText = isRegisterMode ? "Đăng nhập ngay" : "Đăng ký ngay";
+    }
+
+    window.handleAuthSubmit = async function() {
+        const empId = document.getElementById('authEmpId').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        const name = document.getElementById('regName').value.trim();
+
+        if (!empId || !password) {
+            alert("Vui lòng điền đầy đủ Mã nhân viên và Mật khẩu!");
+            return;
+        }
+
+        if (empId === 'admin') {
+            const adminRef = doc(db, "users", "admin");
+            const adminSnap = await getDoc(adminRef);
+            if (!adminSnap.exists()) {
+                await setDoc(adminRef, {
+                    empId: 'admin',
+                    name: 'Quản Trị Viên',
+                    password: 'admin',
+                    role: 'admin',
+                    createdAt: serverTimestamp()
+                });
+            }
+        }
+
+        const userRef = doc(db, "users", empId);
+        const userSnap = await getDoc(userRef);
+
+        if (isRegisterMode) {
+            if (!name) {
+                alert("Vui lòng nhập Họ và Tên khi đăng ký!");
+                return;
+            }
+            if (userSnap.exists()) {
+                alert("Mã nhân viên này đã tồn tại trong hệ thống!");
+                return;
+            }
+            await setDoc(userRef, {
+                empId: empId,
+                name: name,
+                password: password,
+                role: 'staff',
+                createdAt: serverTimestamp()
+            });
+            alert("Đăng ký tài khoản thành công! Vui lòng đăng nhập.");
+            toggleAuthMode();
+        } else {
+            if (!userSnap.exists()) {
+                alert("Không tìm thấy Mã nhân viên này!");
+                return;
+            }
+            const userData = userSnap.data();
+            if (userData.password !== password) {
+                alert("Mật khẩu không chính xác!");
+                return;
+            }
+
+            const sessionData = { empId: userData.empId, empName: userData.name, role: userData.role || 'staff' };
+            localStorage.setItem('currentUser', JSON.stringify(sessionData));
+            initDashboard(sessionData);
+        }
+    }
+
+    window.handleLogout = function() {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('activeShift');
+        document.getElementById('authBox').style.display = 'block';
+        document.getElementById('attendanceBox').style.display = 'none';
+        document.getElementById('adminBox').style.display = 'none';
+        document.getElementById('changePassBox').style.display = 'none';
+        document.getElementById('formTitle').innerText = "Đăng Nhập Hệ Thống";
+        document.getElementById('authEmpId').value = '';
+        document.getElementById('authPassword').value = '';
+    }
+
+    window.openChangePasswordModal = function() {
+        currentUserRole = JSON.parse(localStorage.getItem('currentUser')).role;
+        document.getElementById('attendanceBox').style.display = 'none';
+        document.getElementById('adminBox').style.display = 'none';
+        document.getElementById('changePassBox').style.display = 'block';
+        document.getElementById('formTitle').innerText = "Đổi Mật Khẩu";
+    }
+
+    window.closeChangePasswordModal = function() {
+        document.getElementById('changePassBox').style.display = 'none';
+        if (currentUserRole === 'admin') {
+            document.getElementById('adminBox').style.display = 'block';
+            document.getElementById('formTitle').innerText = "Bảng Quản Trị Nhân Viên";
+        } else {
+            document.getElementById('attendanceBox').style.display = 'block';
+            document.getElementById('formTitle').innerText = "Hệ Thống Chấm Công";
+        }
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+    }
+
+    window.submitChangePassword = async function() {
+        const oldPass = document.getElementById('oldPassword').value.trim();
+        const newPass = document.getElementById('newPassword').value.trim();
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!oldPass || !newPass) {
+            alert("Vui lòng nhập đầy đủ thông tin mật khẩu cũ và mới!");
+            return;
+        }
+
+        const userRef = doc(db, "users", currentUser.empId);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+            if (currentUser.role !== 'admin' && userData.password !== oldPass) {
+                alert("Mật khẩu cũ không chính xác!");
+                return;
+            }
+
+            await updateDoc(userRef, { password: newPass });
+            alert("Đổi mật khẩu thành công!");
+            closeChangePasswordModal();
+        }
+    }
+
+    // ADMIN XÓA NHÂN VIÊN
+    window.adminDeleteUser = async function(empId) {
+        if (empId === 'admin') {
+            alert("Không thể xóa tài khoản quản trị viên gốc!");
+            return;
+        }
+        if (confirm(`Bạn có chắc chắn muốn xóa nhân viên (${empId}) khỏi hệ thống?`)) {
+            try {
+                await deleteDoc(doc(db, "users", empId));
+                alert("Đã xóa tài khoản thành công!");
+                loadAdminUserList();
+            } catch (error) {
+                alert("Lỗi khi xóa tài khoản!");
+            }
+        }
+    }
+
+    // ADMIN ĐỔI MẬT KHẨU NHÂN VIÊN TRỰC TIẾP
+    window.adminResetPassword = async function(empId) {
+        const newPass = prompt(`Nhập mật khẩu mới cho nhân viên (${empId}):`);
+        if (newPass !== null && newPass.trim() !== "") {
+            try {
+                await updateDoc(doc(db, "users", empId), { password: newPass.trim() });
+                alert("Đã cập nhật mật khẩu mới cho nhân viên thành công!");
+                loadAdminUserList();
+            } catch (error) {
+                alert("Lỗi khi đổi mật khẩu!");
+            }
+        }
+    }
+
+    function initDashboard(user) {
+        currentUserRole = user.role;
+        document.getElementById('authBox').style.display = 'none';
+        
+        if (user.role === 'admin') {
+            document.getElementById('adminBox').style.display = 'block';
+            document.getElementById('formTitle').innerText = "Bảng Quản Trị Nhân Viên";
+            loadAdminUserList();
+        } else {
+            document.getElementById('attendanceBox').style.display = 'block';
+            document.getElementById('formTitle').innerText = "Hệ Thống Chấm Công";
+            document.getElementById('currentUserName').innerText = user.empName;
+            document.getElementById('currentUserId').innerText = user.empId;
+
+            requestLocation();
+            checkActiveShiftState();
+        }
+    }
+
+    async function loadAdminUserList() {
+        const adminListContainer = document.getElementById('adminUserList');
+        try {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            if (querySnapshot.empty) {
+                adminListContainer.innerHTML = `<div style="text-align:center; color:#888; font-size:12px; padding:20px;">Chưa có nhân viên nào.</div>`;
+                return;
+            }
+
+            adminListContainer.innerHTML = '';
+            querySnapshot.forEach((docSnap) => {
+                const u = docSnap.data();
+                const item = document.createElement('div');
+                item.className = 'admin-item';
+                
+                let actionButtons = '';
+                if (u.empId !== 'admin') {
+                    actionButtons = `
+                        <div class="admin-controls">
+                            <button class="btn-sm btn-sm-edit" onclick="adminResetPassword('${u.empId}')">Đổi MK</button>
+                            <button class="btn-sm btn-sm-del" onclick="adminDeleteUser('${u.empId}')">Xóa</button>
+                        </div>
+                    `;
+                } else {
+                    actionButtons = `<span class="badge bg-admin">Quản lý</span>`;
+                }
+
+                item.innerHTML = `
+                    <div class="admin-info">
+                        <div class="admin-name">${u.name} <span class="admin-id">(${u.empId})</span></div>
+                        <div class="admin-detail">Mật khẩu: ${u.password}</div>
+                    </div>
+                    ${actionButtons}
+                `;
+                adminListContainer.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Lỗi tải danh sách:", error);
+        }
+    }
+
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Bán kính Trái Đất tính bằng mét
+        const R = 6371e3;
         const φ1 = lat1 * Math.PI / 180;
         const φ2 = lat2 * Math.PI / 180;
         const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -387,14 +725,14 @@
                   Math.cos(φ1) * Math.cos(φ2) *
                   Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c; // Khoảng cách mét
+        return R * c;
     }
 
     function requestLocation() {
+        const locationStatus = document.getElementById('locationStatus');
         if (!navigator.geolocation) {
-            updateLocationStatus("❌ Trình duyệt không hỗ trợ định vị GPS!", "error");
-            checkCurrentState();
+            locationStatus.innerText = "❌ Trình duyệt không hỗ trợ định vị GPS!";
+            locationStatus.className = "location-info loc-error";
             return;
         }
 
@@ -402,109 +740,72 @@
             (position) => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
-                
-                const latStr = userLat.toFixed(6);
-                const lngStr = userLng.toFixed(6);
-                currentLocation = `${latStr}, ${lngStr} (https://maps.google.com/?q=${latStr},${lngStr})`;
+                currentLocation = `${userLat.toFixed(6)}, ${userLng.toFixed(6)}`;
 
-                // Tính khoảng cách tới vị trí cửa hàng
                 const distance = calculateDistance(userLat, userLng, STORE_LAT, STORE_LNG);
-
                 if (distance <= MAX_ALLOWED_DISTANCE_METERS) {
                     isWithinRange = true;
-                    updateLocationStatus(`📍 Vị trí hợp lệ (${Math.round(distance)}m từ cửa hàng)`, "success");
+                    locationStatus.innerText = `📍 Vị trí hợp lệ (${Math.round(distance)}m từ cửa hàng)`;
+                    locationStatus.className = "location-info loc-success";
                 } else {
                     isWithinRange = false;
-                    updateLocationStatus(`❌ Đang ở quá xa cửa hàng (${Math.round(distance)}m).`, "error");
+                    locationStatus.innerText = `❌ Bạn đang ở quá xa cửa hàng (${Math.round(distance)}m).`;
+                    locationStatus.className = "location-info loc-error";
                 }
-                checkCurrentState();
+                checkActiveShiftState();
             },
             (error) => {
-                let errorMsg = "❌ Yêu cầu bật quyền GPS để chấm công!";
-                if (error.code === error.PERMISSION_DENIED) {
-                    errorMsg = "❌ Bạn đã từ chối quyền vị trí. Vui lòng bật GPS!";
-                }
-                updateLocationStatus(errorMsg, "error");
-                checkCurrentState();
+                locationStatus.innerText = "❌ Vui lòng bật quyền truy cập GPS để chấm công!";
+                locationStatus.className = "location-info loc-error";
+                checkActiveShiftState();
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
     }
 
-    function updateLocationStatus(msg, type) {
-        locationStatus.innerText = msg;
-        locationStatus.className = `location-info loc-${type}`;
-    }
-
-    function checkCurrentState() {
+    function checkActiveShiftState() {
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
+        const btnIn = document.getElementById('btnIn');
+        const btnOut = document.getElementById('btnOut');
+        const statusBanner = document.getElementById('statusBanner');
+
         if (activeShift) {
-            lockUI(activeShift.empId, activeShift.empName);
+            btnIn.disabled = true;
+            btnOut.disabled = false;
+            statusBanner.style.display = 'block';
         } else {
-            unlockUI();
+            btnIn.disabled = !isWithinRange;
+            btnOut.disabled = true;
+            statusBanner.style.display = 'none';
         }
     }
 
     window.handleCheckIn = async function() {
-        if (!currentLocation || !isWithinRange) { 
-            alert("Bạn đang ở ngoài phạm vi cho phép của cửa hàng!"); 
-            return; 
+        if (!currentLocation || !isWithinRange) {
+            alert("Bạn đang ở ngoài phạm vi cho phép của cửa hàng!");
+            return;
         }
-
-        const empId = empIdInput.value.trim();
-        const name = empNameInput.value.trim();
-
-        if (!empId) { alert("Vui lòng nhập Mã Nhân Viên!"); empIdInput.focus(); return; }
-        if (!name) { alert("Vui lòng nhập Họ và Tên!"); empNameInput.focus(); return; }
-
-        localStorage.setItem('activeShift', JSON.stringify({ empId, empName: name }));
-        lockUI(empId, name);
-
-        await sendAttendanceToFirebase('Vào ca', empId, name);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        localStorage.setItem('activeShift', JSON.stringify(currentUser));
+        checkActiveShiftState();
+        await sendAttendanceToFirebase('Vào ca', currentUser.empId, currentUser.empName);
     }
 
     window.handleCheckOut = async function() {
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        if (!activeShift) {
-            alert("Không tìm thấy thông tin ca làm việc đang mở!");
-            return;
+        if (!activeShift) return;
+
+        if (!currentLocation || !isWithinRange) {
+            if (!confirm("Vị trí GPS ngoài phạm vi cửa hàng. Bạn vẫn muốn báo Hết Ca?")) return;
         }
 
-        if (!currentLocation || !isWithinRange) { 
-            if (!confirm("Vị trí GPS chưa xác nhận hoặc đang ở ngoài phạm vi cửa hàng. Bạn vẫn muốn báo Hết Ca?")) {
-                return;
-            }
-        }
-
-        btnOut.disabled = true; // Khóa nút tạm thời để tránh bấm nhiều lần
+        document.getElementById('btnOut').disabled = true;
         await sendAttendanceToFirebase('Hết ca', activeShift.empId, activeShift.empName);
-
-        localStorage.removeItem('activeShift');
-        unlockUI();
+        
         alert("Đã kết thúc ca làm việc thành công!");
+        handleLogout();
     }
 
-    function lockUI(empId, name) {
-        empIdInput.value = empId;
-        empNameInput.value = name;
-        empIdInput.disabled = true;
-        empNameInput.disabled = true;
-        btnIn.disabled = true;
-        btnOut.disabled = false; // Luôn mở khóa nút Hết Ca khi đã vào ca
-        statusBanner.style.display = 'block';
-    }
-
-    function unlockUI() {
-        empIdInput.value = '';
-        empNameInput.value = '';
-        empIdInput.disabled = false;
-        empNameInput.disabled = false;
-        btnIn.disabled = !isWithinRange;
-        btnOut.disabled = true;
-        statusBanner.style.display = 'none';
-    }
-
-    // Hàm gửi dữ liệu lên Firebase Firestore
     async function sendAttendanceToFirebase(type, empId, name) {
         const now = new Date();
         const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
@@ -521,15 +822,13 @@
                 type: type,
                 createdAt: serverTimestamp()
             });
-            console.log("Đã gửi dữ liệu chấm công lên Firebase thành công!");
         } catch (error) {
-            console.error("Lỗi khi ghi dữ liệu:", error);
             alert("Có lỗi xảy ra khi lưu lịch sử!");
         }
     }
 
-    // Lắng nghe thay đổi dữ liệu thời gian thực (Real-time) từ Firebase
     function listenRealtimeLogs() {
+        const logsContainer = document.getElementById('logs');
         const q = query(collection(db, "attendance_logs"), orderBy("createdAt", "desc"), limit(50));
         
         onSnapshot(q, (snapshot) => {
@@ -553,13 +852,16 @@
                 `;
                 logsContainer.appendChild(logItem);
             });
-        }, (error) => {
-            console.error("Lỗi lắng nghe dữ liệu real-time:", error);
         });
     }
 
-    requestLocation();
-    listenRealtimeLogs();
+    window.onload = function() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            initDashboard(JSON.parse(savedUser));
+        }
+        listenRealtimeLogs();
+    }
 </script>
 
 </body>
