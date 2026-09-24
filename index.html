@@ -87,6 +87,100 @@
             font-weight: 600;
         }
 
+        /* Authentication Container */
+        .auth-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            color: var(--primary-black);
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        /* User Header Bar */
+        .user-bar {
+            width: 100%;
+            max-width: 950px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+        }
+
+        .user-info {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-black);
+        }
+
+        .user-info span {
+            color: var(--accent-gold);
+        }
+
+        .badge-admin {
+            background-color: var(--accent-gold);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-left: 8px;
+            letter-spacing: 1px;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 6px 15px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger-color);
+            color: #fff;
+            border-color: var(--danger-color);
+        }
+
         /* Layout Container */
         .container { 
             max-width: 950px; 
@@ -108,6 +202,7 @@
             border-radius: 4px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
             border: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
 
         h2 { 
@@ -166,7 +261,7 @@
             letter-spacing: 1.5px;
         }
 
-        input { 
+        input, select { 
             width: 100%; 
             padding: 12px 15px; 
             border: 1px solid var(--border-color); 
@@ -177,13 +272,13 @@
             transition: all 0.3s ease;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--accent-gold);
             background-color: #fff;
         }
 
-        input:disabled { 
+        input:disabled, select:disabled { 
             background-color: #f0f0f0; 
             cursor: not-allowed; 
             color: #777; 
@@ -205,6 +300,23 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             transition: all 0.3s ease; 
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: var(--primary-black);
+            border: 1px solid var(--primary-black);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
         }
 
         .btn-in { 
@@ -234,6 +346,28 @@
             border-color: #ccc;
             background-color: #eee;
             color: #888;
+        }
+
+        /* Tables & User Management */
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .user-table th, .user-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .user-table th {
+            background-color: #fafafa;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 10px;
         }
 
         /* History Logs */
@@ -293,39 +427,135 @@
     </div>
 </div>
 
-<div class="container">
+<!-- KHỐI ĐĂNG NHẬP / ĐĂNG KÝ -->
+<div id="authSection" class="auth-container">
     <div class="card">
-        <h2>Chấm Công Trực Tuyến</h2>
-
-        <div id="statusBanner" class="status-banner">
-            🔒 ĐANG TRONG CA LÀM VIỆC
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">Đăng Nhập</button>
+            <button class="auth-tab" onclick="switchAuthTab('register')">Đăng Ký</button>
         </div>
 
-        <div id="locationStatus" class="location-info loc-loading">
-            🔄 Đang xác thực vị trí GPS...
-        </div>
-        
-        <div class="form-group">
+        <!-- Form Đăng Nhập -->
+        <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
             <div class="field">
-                <label for="empId">Mã Nhân Viên</label>
-                <input type="text" id="empId" placeholder="VD: NV01">
+                <label for="loginEmpId">Mã Nhân Viên (Hoặc admin)</label>
+                <input type="text" id="loginEmpId" required placeholder="VD: NV01 hoặc admin">
+            </div>
+            <div class="field">
+                <label for="loginPassword">Mật khẩu</label>
+                <input type="password" id="loginPassword" required placeholder="Nhập mật khẩu">
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+        </form>
+
+        <!-- Form Đăng Ký (ĐÃ BỎ TÊN ĐĂNG NHẬP) -->
+        <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+            <div class="field">
+                <label for="regEmpId">Mã Nhân Viên</label>
+                <input type="text" id="regEmpId" required placeholder="VD: NV01">
+            </div>
+            <div class="field">
+                <label for="regEmpName">Họ và Tên</label>
+                <input type="text" id="regEmpName" required placeholder="VD: Nguyễn Văn A">
+            </div>
+            <div class="field">
+                <label for="regPassword">Mật khẩu</label>
+                <input type="password" id="regPassword" required placeholder="Tạo mật khẩu">
+            </div>
+            <button type="submit" class="btn btn-primary">Tạo Tài Khoản</button>
+        </form>
+    </div>
+</div>
+
+<!-- KHỐI HỆ THỐNG (HIỂN THỊ KHI ĐÃ ĐĂNG NHẬP) -->
+<div id="attendanceSection" style="display: none; width: 100%; max-width: 950px;">
+    <div class="user-bar">
+        <div class="user-info">
+            Xin chào: <span id="currentUserName">---</span> (<span id="currentUserCode">---</span>)
+            <span id="adminBadge" class="badge-admin" style="display: none;">ADMIN</span>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">Đăng Xuất</button>
+    </div>
+
+    <!-- KHỐI QUẢN TRỊ ADMIN (CHỈ ADMIN MỚI THẤY) -->
+    <div id="adminPanel" style="display: none;">
+        <div class="card">
+            <h2>Quản Lý Nhân Viên & Ca Làm Việc (Admin)</h2>
+            <div class="container" style="gap: 20px;">
+                <!-- Can Thiệp Ca Làm Việc -->
+                <div>
+                    <label>Chọn Nhân Viên Để Can Thiệp Ca</label>
+                    <select id="adminSelectEmp">
+                        <option value="">-- Chọn Nhân Viên --</option>
+                    </select>
+                    
+                    <div class="btn-group" style="margin-top: 15px;">
+                        <button class="btn btn-in btn-sm" onclick="adminForceCheckIn()">Ép Vào Ca</button>
+                        <button class="btn btn-out btn-sm" onclick="adminForceCheckOut()">Ép Hết Ca</button>
+                    </div>
+                </div>
+
+                <!-- Đổi Mật Khẩu Nhân Viên -->
+                <div>
+                    <label>Đổi Mật Khẩu Cho Nhân Viên</label>
+                    <input type="password" id="adminNewPass" placeholder="Nhập mật khẩu mới" style="margin-bottom: 10px;">
+                    <button class="btn btn-primary btn-sm" onclick="adminChangePassword()">Cập Nhật Mật Khẩu</button>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="empName">Họ và Tên</label>
-                <input type="text" id="empName" placeholder="VD: Nguyễn Văn A">
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-in" id="btnIn" onclick="handleCheckIn()" disabled>Vào Ca</button>
-                <button class="btn btn-out" id="btnOut" onclick="handleCheckOut()" disabled>Hết Ca</button>
+            <!-- Danh Sách Tài Khoản Nhân Viên -->
+            <div style="margin-top: 25px;">
+                <label>Danh Sách Tài Khoản Nhân Viên</label>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Mã NV</th>
+                            <th>Họ và Tên</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>Lịch Sử Chấm Công</h2>
-        <div class="log-list" id="logs"></div>
+    <!-- KHỐI CHẤM CÔNG DÀNH CHO NHÂN VIÊN HOẶC ADMIN -->
+    <div class="container">
+        <div class="card">
+            <h2>Chấm Công Trực Tuyến</h2>
+
+            <div id="statusBanner" class="status-banner">
+                🔒 ĐANG TRONG CA LÀM VIỆC
+            </div>
+
+            <div id="locationStatus" class="location-info loc-loading">
+                🔄 Đang xác thực vị trí GPS...
+            </div>
+            
+            <div class="form-group">
+                <div class="field">
+                    <label for="empId">Mã Nhân Viên</label>
+                    <input type="text" id="empId" disabled readonly>
+                </div>
+
+                <div class="field">
+                    <label for="empName">Họ và Tên</label>
+                    <input type="text" id="empName" disabled readonly>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-in" id="btnIn" onclick="handleCheckIn()" disabled>Vào Ca</button>
+                    <button class="btn btn-out" id="btnOut" onclick="handleCheckOut()" disabled>Hết Ca</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Lịch Sử Chấm Công</h2>
+            <div class="log-list" id="logs"></div>
+        </div>
     </div>
 </div>
 
@@ -337,6 +567,14 @@
     const TARGET_LNG = 105.772388;
     const MAX_DISTANCE_METERS = 300;
 
+    const authSection = document.getElementById('authSection');
+    const attendanceSection = document.getElementById('attendanceSection');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminBadge = document.getElementById('adminBadge');
+    
+    const currentUserName = document.getElementById('currentUserName');
+    const currentUserCode = document.getElementById('currentUserCode');
+
     const logsContainer = document.getElementById('logs');
     const empIdInput = document.getElementById('empId');
     const empNameInput = document.getElementById('empName');
@@ -345,12 +583,206 @@
     const statusBanner = document.getElementById('statusBanner');
     const locationStatus = document.getElementById('locationStatus');
 
-    let currentLocation = null;
+    let currentLocation = "Admin Bypass GPS";
     let isWithinAllowedArea = false;
+    let currentUser = null;
 
-    // Công thức Haversine tính khoảng cách giữa 2 tọa độ (mét)
+    // --- Chuyển Tab Đăng Nhập / Đăng Ký ---
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+
+        if (tab === 'login') {
+            document.querySelectorAll('.auth-tab')[0].classList.add('active');
+            document.getElementById('loginForm').classList.add('active');
+        } else {
+            document.querySelectorAll('.auth-tab')[1].classList.add('active');
+            document.getElementById('registerForm').classList.add('active');
+        }
+    }
+
+    // --- Đăng Ký Tài Khoản ---
+    function handleRegister(e) {
+        e.preventDefault();
+        const empId = document.getElementById('regEmpId').value.trim().toUpperCase();
+        const empName = document.getElementById('regEmpName').value.trim();
+        const password = document.getElementById('regPassword').value;
+
+        if (empId === 'ADMIN') {
+            alert("Mã nhân viên 'ADMIN' dành riêng cho quản trị viên!");
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        
+        if (users.some(u => u.empId === empId)) {
+            alert("Mã Nhân Viên này đã được đăng ký!");
+            return;
+        }
+
+        const newUser = { empId, empName, password };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+        document.getElementById('registerForm').reset();
+        switchAuthTab('login');
+    }
+
+    // --- Đăng Nhập ---
+    function handleLogin(e) {
+        e.preventDefault();
+        const inputId = document.getElementById('loginEmpId').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        // TÀI KHOẢN ADMIN CAO NHẤT
+        if (inputId.toLowerCase() === 'admin' && password === 'admin') {
+            currentUser = { empId: 'ADMIN', empName: 'Quản Trị Viên', isAdmin: true };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            document.getElementById('loginForm').reset();
+            initSession();
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const found = users.find(u => u.empId.toUpperCase() === inputId.toUpperCase() && u.password === password);
+
+        if (found) {
+            currentUser = { ...found, isAdmin: false };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            document.getElementById('loginForm').reset();
+            initSession();
+        } else {
+            alert("Mã Nhân Viên hoặc Mật khẩu không chính xác!");
+        }
+    }
+
+    // --- Đăng Xuất ---
+    function handleLogout() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        authSection.style.display = 'block';
+        attendanceSection.style.display = 'none';
+        adminPanel.style.display = 'none';
+        adminBadge.style.display = 'none';
+    }
+
+    // --- Khởi tạo Phiên làm việc ---
+    function initSession() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            authSection.style.display = 'none';
+            attendanceSection.style.display = 'block';
+
+            currentUserName.innerText = currentUser.empName;
+            currentUserCode.innerText = currentUser.empId;
+
+            empIdInput.value = currentUser.empId;
+            empNameInput.value = currentUser.empName;
+
+            if (currentUser.isAdmin) {
+                adminPanel.style.display = 'block';
+                adminBadge.style.display = 'inline-block';
+                isWithinAllowedArea = true;
+                updateLocationStatus("⚡ Quyền Admin: Miễn trừ kiểm tra GPS", "success");
+                loadAdminData();
+                checkCurrentState();
+            } else {
+                adminPanel.style.display = 'none';
+                adminBadge.style.display = 'none';
+                requestLocation();
+            }
+        } else {
+            authSection.style.display = 'block';
+            attendanceSection.style.display = 'none';
+        }
+    }
+
+    // --- TÍNH NĂNG DÀNH CHO ADMIN ---
+    function loadAdminData() {
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const selectEmp = document.getElementById('adminSelectEmp');
+        const userTableBody = document.getElementById('userTableBody');
+
+        selectEmp.innerHTML = '<option value="">-- Chọn Nhân Viên --</option>';
+        userTableBody.innerHTML = '';
+
+        users.forEach(u => {
+            // Thêm vào ô select
+            const opt = document.createElement('option');
+            opt.value = u.empId;
+            opt.innerText = `${u.empName} (${u.empId})`;
+            selectEmp.appendChild(opt);
+
+            // Thêm vào bảng danh sách
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${u.empId}</td>
+                <td>${u.empName}</td>
+                <td>
+                    <button class="btn btn-out btn-sm" onclick="adminDeleteUser('${u.empId}')">Xóa</button>
+                </td>
+            `;
+            userTableBody.appendChild(tr);
+        });
+    }
+
+    function adminChangePassword() {
+        const empId = document.getElementById('adminSelectEmp').value;
+        const newPass = document.getElementById('adminNewPass').value.trim();
+
+        if (!empId) { alert("Vui lòng chọn nhân viên!"); return; }
+        if (!newPass) { alert("Vui lòng nhập mật khẩu mới!"); return; }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const index = users.findIndex(u => u.empId === empId);
+        if (index !== -1) {
+            users[index].password = newPass;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`Đã đổi mật khẩu cho nhân viên ${empId} thành công!`);
+            document.getElementById('adminNewPass').value = '';
+        }
+    }
+
+    function adminDeleteUser(empId) {
+        if (confirm(`Bạn có chắc muốn xóa nhân viên ${empId}?`)) {
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            users = users.filter(u => u.empId !== empId);
+            localStorage.setItem('users', JSON.stringify(users));
+            loadAdminData();
+        }
+    }
+
+    async function adminForceCheckIn() {
+        const empId = document.getElementById('adminSelectEmp').value;
+        if (!empId) { alert("Vui lòng chọn nhân viên!"); return; }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const targetUser = users.find(u => u.empId === empId);
+
+        if (targetUser) {
+            await sendAttendance('Vào ca (Admin ép)', targetUser.empId, targetUser.empName);
+            alert(`Đã ép VÀO CA thành công cho ${targetUser.empName}`);
+        }
+    }
+
+    async function adminForceCheckOut() {
+        const empId = document.getElementById('adminSelectEmp').value;
+        if (!empId) { alert("Vui lòng chọn nhân viên!"); return; }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const targetUser = users.find(u => u.empId === empId);
+
+        if (targetUser) {
+            await sendAttendance('Hết ca (Admin ép)', targetUser.empId, targetUser.empName);
+            alert(`Đã ép HẾT CA thành công cho ${targetUser.empName}`);
+        }
+    }
+
+    // --- TÍNH NĂNG ĐỊNH VỊ GPS VÀ CHẤM CÔNG ---
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371000; // Bán kính Trái Đất (mét)
+        const R = 6371000;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 
@@ -358,7 +790,7 @@
             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; // Khoảng cách theo mét
+        return R * c;
     }
 
     function requestLocation() {
@@ -376,7 +808,6 @@
                 const lngStr = userLng.toFixed(6);
                 currentLocation = `${latStr}, ${lngStr} (https://maps.google.com/?q=${latStr},${lngStr})`;
                 
-                // Tính khoảng cách đến vị trí mặc định
                 const distance = calculateDistance(userLat, userLng, TARGET_LAT, TARGET_LNG);
 
                 if (distance <= MAX_DISTANCE_METERS) {
@@ -408,68 +839,43 @@
     }
 
     function checkCurrentState() {
-        if (!currentLocation) return;
-
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        if (activeShift) {
-            lockUI(activeShift.empId, activeShift.empName);
+        if (activeShift && activeShift.empId === currentUser.empId) {
+            lockUI();
         } else {
             unlockUI();
         }
     }
 
     async function handleCheckIn() {
-        if (!currentLocation) { 
-            alert("Chưa xác định được vị trí GPS!"); 
-            return; 
-        }
-
-        if (!isWithinAllowedArea) {
+        if (!isWithinAllowedArea && !currentUser.isAdmin) {
             alert(`Bạn đang ở ngoài phạm vi cho phép (${MAX_DISTANCE_METERS}m). Không thể vào ca!`);
             return;
         }
 
-        const empId = empIdInput.value.trim();
-        const name = empNameInput.value.trim();
+        localStorage.setItem('activeShift', JSON.stringify({ empId: currentUser.empId, empName: currentUser.empName }));
+        lockUI();
 
-        if (!empId) { alert("Vui lòng nhập Mã Nhân Viên!"); empIdInput.focus(); return; }
-        if (!name) { alert("Vui lòng nhập Họ và Tên!"); empNameInput.focus(); return; }
-
-        localStorage.setItem('activeShift', JSON.stringify({ empId, empName: name }));
-        lockUI(empId, name);
-
-        await sendAttendance('Vào ca', empId, name);
+        await sendAttendance('Vào ca', currentUser.empId, currentUser.empName);
     }
 
     async function handleCheckOut() {
-        if (!currentLocation) { alert("Chưa xác định được vị trí GPS!"); return; }
-
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        if (!activeShift) return;
+        if (!activeShift && !currentUser.isAdmin) return;
 
-        await sendAttendance('Hết ca', activeShift.empId, activeShift.empName);
+        await sendAttendance('Hết ca', currentUser.empId, currentUser.empName);
 
         localStorage.removeItem('activeShift');
         unlockUI();
     }
 
-    function lockUI(empId, name) {
-        empIdInput.value = empId;
-        empNameInput.value = name;
-        empIdInput.disabled = true;
-        empNameInput.disabled = true;
+    function lockUI() {
         btnIn.disabled = true;
         btnOut.disabled = false;
         statusBanner.style.display = 'block';
     }
 
     function unlockUI() {
-        empIdInput.value = '';
-        empNameInput.value = '';
-        empIdInput.disabled = false;
-        empNameInput.disabled = false;
-        
-        // Nút Vào ca chỉ bật khi vị trí trong phạm vi cho phép
         btnIn.disabled = !isWithinAllowedArea;
         btnOut.disabled = true;
         statusBanner.style.display = 'none';
@@ -499,14 +905,14 @@
                 body: JSON.stringify(payload)
             });
         } catch (error) {
-            console.error("Lỗi gửi dữ liệu:", error);
+            console.error("Lỗi gửi dữ liệu lên Google Sheet:", error);
         }
     }
 
     function addLogToUI(empId, name, timestamp, type) {
         const logItem = document.createElement('div');
         logItem.className = 'log-item';
-        const badgeClass = type === 'Vào ca' ? 'bg-in' : 'bg-out';
+        const badgeClass = type.includes('Vào ca') ? 'bg-in' : 'bg-out';
         logItem.innerHTML = `
             <div class="log-info">
                 <div class="log-name">${name} <span class="log-id">(${empId})</span></div>
@@ -517,7 +923,8 @@
         logsContainer.prepend(logItem);
     }
 
-    requestLocation();
+    // Chạy kiểm tra phiên làm việc khi load trang
+    initSession();
 </script>
 
 </body>
