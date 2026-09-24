@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DUNG THÙY PHẠM - Hệ Thống Chấm Công</title>
+    <title>DUNG THÙY PHẠM - Hệ Thống Chấm Công Real-Time</title>
     <!-- Font chữ Serif & Sans-serif cao cấp từ Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -279,6 +279,14 @@
 
         .bg-in { background-color: #eaf5ea; color: var(--success-color); }
         .bg-out { background-color: #fdeaea; color: var(--danger-color); }
+        
+        .realtime-indicator { 
+            font-size: 10px; 
+            color: var(--success-color); 
+            float: right; 
+            text-transform: none; 
+            font-weight: 400; 
+        }
     </style>
 </head>
 <body>
@@ -324,14 +332,32 @@
     </div>
 
     <div class="card">
-        <h2>Lịch Sử Chấm Công</h2>
-        <div class="log-list" id="logs"></div>
+        <h2>Lịch Sử Chấm Công <span class="realtime-indicator">● Real-time Firebase</span></h2>
+        <div class="log-list" id="logs">
+            <div style="text-align:center; color:#888; font-size:12px; padding:20px;">Đang kết nối cơ sở dữ liệu...</div>
+        </div>
     </div>
 </div>
 
-<script>
-    // URL API mới đã được cập nhật
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzImahn87_8f4d81rO5em7VBzOrEXBFbatXP8ks7oxvaBL37_e9h9mq-nzuPwC5ZOgh/exec";
+<!-- Tích hợp Firebase SDK & Logic Chấm Công Real-time -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Cấu hình Firebase của bạn
+    const firebaseConfig = {
+        apiKey: "AIzaSyBwALvjs3G2cvRv7ersooMgKcd70bTelbg",
+        authDomain: "chamcong-ca1f3.firebaseapp.com",
+        projectId: "chamcong-ca1f3",
+        storageBucket: "chamcong-ca1f3.firebasestorage.app",
+        messagingSenderId: "707641110758",
+        appId: "1:707641110758:web:be34787ba72738e9434b27",
+        measurementId: "G-CHXECV7F1D"
+    };
+
+    // Khởi tạo Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     // 1. TỌA ĐỘ MẶC ĐỊNH CỬA HÀNG VÀ BÁN KÍNH CHO PHÉP (MÉT)
     const STORE_LAT = 19.780000;
@@ -419,7 +445,7 @@
         }
     }
 
-    async function handleCheckIn() {
+    window.handleCheckIn = async function() {
         if (!currentLocation || !isWithinRange) { 
             alert("Bạn đang ở ngoài phạm vi cho phép của cửa hàng!"); 
             return; 
@@ -434,10 +460,10 @@
         localStorage.setItem('activeShift', JSON.stringify({ empId, empName: name }));
         lockUI(empId, name);
 
-        await sendAttendance('Vào ca', empId, name);
+        await sendAttendanceToFirebase('Vào ca', empId, name);
     }
 
-    async function handleCheckOut() {
+    window.handleCheckOut = async function() {
         const activeShift = JSON.parse(localStorage.getItem('activeShift'));
         if (!activeShift) {
             alert("Không tìm thấy thông tin ca làm việc đang mở!");
@@ -451,7 +477,7 @@
         }
 
         btnOut.disabled = true; // Khóa nút tạm thời để tránh bấm nhiều lần
-        await sendAttendance('Hết ca', activeShift.empId, activeShift.empName);
+        await sendAttendanceToFirebase('Hết ca', activeShift.empId, activeShift.empName);
 
         localStorage.removeItem('activeShift');
         unlockUI();
@@ -478,53 +504,62 @@
         statusBanner.style.display = 'none';
     }
 
-    // Hàm gửi dữ liệu đã khắc phục triệt để lỗi CORS
-    async function sendAttendance(type, empId, name) {
+    // Hàm gửi dữ liệu lên Firebase Firestore
+    async function sendAttendanceToFirebase(type, empId, name) {
         const now = new Date();
         const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
         const timeStr = now.toTimeString().split(' ')[0];
 
-        const payload = {
-            empId: empId,
-            empName: name,
-            dateStr: dateStr,
-            timeStr: timeStr,
-            location: currentLocation || 'Chưa xác định GPS',
-            type: type
-        };
-
-        addLogToUI(empId, name, `${timeStr} (${dateStr})`, type);
-
         try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Bỏ qua chính sách kiểm tra CORS từ phía trình duyệt
-                headers: { 
-                    'Content-Type': 'text/plain;charset=utf-8' 
-                },
-                body: JSON.stringify(payload)
+            await addDoc(collection(db, "attendance_logs"), {
+                empId: empId,
+                name: name,
+                dateStr: dateStr,
+                timeStr: timeStr,
+                timestampText: `${timeStr} (${dateStr})`,
+                location: currentLocation || 'Chưa xác định GPS',
+                type: type,
+                createdAt: serverTimestamp()
             });
-            console.log("Đã gửi dữ liệu chấm công thành công!");
+            console.log("Đã gửi dữ liệu chấm công lên Firebase thành công!");
         } catch (error) {
-            console.error("Lỗi gửi dữ liệu:", error);
+            console.error("Lỗi khi ghi dữ liệu:", error);
+            alert("Có lỗi xảy ra khi lưu lịch sử!");
         }
     }
 
-    function addLogToUI(empId, name, timestamp, type) {
-        const logItem = document.createElement('div');
-        logItem.className = 'log-item';
-        const badgeClass = type === 'Vào ca' ? 'bg-in' : 'bg-out';
-        logItem.innerHTML = `
-            <div class="log-info">
-                <div class="log-name">${name} <span class="log-id">(${empId})</span></div>
-                <div class="log-time">${timestamp}</div>
-            </div>
-            <span class="badge ${badgeClass}">${type}</span>
-        `;
-        logsContainer.prepend(logItem);
+    // Lắng nghe thay đổi dữ liệu thời gian thực (Real-time) từ Firebase
+    function listenRealtimeLogs() {
+        const q = query(collection(db, "attendance_logs"), orderBy("createdAt", "desc"), limit(50));
+        
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                logsContainer.innerHTML = `<div style="text-align:center; color:#888; font-size:12px; padding:20px;">Chưa có lịch sử chấm công.</div>`;
+                return;
+            }
+
+            logsContainer.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const log = doc.data();
+                const logItem = document.createElement('div');
+                logItem.className = 'log-item';
+                const badgeClass = log.type === 'Vào ca' ? 'bg-in' : 'bg-out';
+                logItem.innerHTML = `
+                    <div class="log-info">
+                        <div class="log-name">${log.name} <span class="log-id">(${log.empId})</span></div>
+                        <div class="log-time">${log.timestampText || 'Đang cập nhật...'}</div>
+                    </div>
+                    <span class="badge ${badgeClass}">${log.type}</span>
+                `;
+                logsContainer.appendChild(logItem);
+            });
+        }, (error) => {
+            console.error("Lỗi lắng nghe dữ liệu real-time:", error);
+        });
     }
 
     requestLocation();
+    listenRealtimeLogs();
 </script>
 
 </body>
