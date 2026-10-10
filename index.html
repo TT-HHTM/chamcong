@@ -25,11 +25,9 @@
             measurementId: "G-8Z8ZHR78X9"
         };
 
-        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Đưa các hàm database ra window để script bên dưới gọi được
         window.db = db;
         window.dbRef = ref;
         window.dbSet = set;
@@ -37,9 +35,10 @@
         window.dbRemove = remove;
         window.dbPush = push;
 
-        // Tự động lắng nghe dữ liệu Realtime khi mở trang
         document.addEventListener("DOMContentLoaded", () => {
-            initRealtimeDatabase();
+            if (typeof initRealtimeDatabase === "function") {
+                initRealtimeDatabase();
+            }
         });
     </script>
 
@@ -71,3 +70,481 @@
             border: 2px solid var(--primary-color) !important;
         }
         .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        }
+        @media (max-width: 768px) {
+            .app-header h3 { font-size: 1.1rem; }
+            .btn-mobile-lg {
+                padding: 12px;
+                font-size: 1rem;
+                font-weight: 600;
+                border-radius: 12px;
+            }
+            .mobile-bottom-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+                padding: 10px 16px;
+                z-index: 1000;
+                display: flex;
+                gap: 10px;
+            }
+            .mobile-bottom-bar button {
+                flex: 1;
+            }
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+        }
+        @media (min-width: 769px) {
+            .mobile-bottom-bar { display: none; }
+        }
+        .preview-img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-header mb-4">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fs-3">📦</span>
+            <div>
+                <h3 class="mb-0 fw-bold">Nhập Liệu Hàng Hóa</h3>
+                <small class="opacity-75 d-none d-sm-inline">Xuất file chuẩn định dạng KiotViet (Realtime)</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-white text-primary px-3 py-2 rounded-3 shadow-sm fw-bold text-center">
+                <span style="font-size: 0.75rem; color: #6c757d; display: block;">Tổng số lượng</span>
+                <span id="topRowCount" style="font-size: 1.1rem;">0</span> sản phẩm
+            </div>
+            <div class="d-none d-md-flex gap-2">
+                <button class="btn btn-warning text-white fw-semibold rounded-3 px-3" onclick="downloadTemplate()">
+                    <i class="bi bi-file-earmark-excel"></i> File Mẫu
+                </button>
+                <button class="btn btn-success fw-semibold rounded-3 px-3" onclick="exportToExcel()">
+                    <i class="bi bi-download"></i> Xuất Excel KV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-3 px-md-4">
+    <div class="row g-4">
+        <!-- Form Nhập Liệu / Sửa -->
+        <div class="col-12 col-lg-5 col-xl-4">
+            <div class="card card-custom p-3 p-md-4 sticky-top" style="top: 20px; z-index: 100;">
+                <form id="productForm" onsubmit="submitForm(event)">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Loại hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="loaiHang" value="Hàng hóa" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Nhóm hàng (3 Cấp) <span class="text-danger">*</span></label>
+                            <select class="form-select" id="nhomHang" required>
+                                <option value="Khác" selected>Khác</option>
+                                <option value="Áo">Áo</option>
+                                <option value="Váy">Váy</option>
+                                <option value="Chân váy">Chân váy</option>
+                                <option value="Giày">Giày</option>
+                                <option value="Phụ kiện">Phụ kiện</option>
+                                <option value="Quần">Quần</option>
+                                <option value="Quần bò">Quần bò</option>
+                                <option value="SET">SET</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Tên hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="giaBan" value="0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Giá vốn (VNĐ)</label>
+                            <input type="number" class="form-control" id="giaVon" value="0" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
+                                    📸 Chụp
+                                </button>
+                            </div>
+                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
+                        </div>
+
+                        <div class="col-12 mt-4 d-grid gap-2">
+                            <button type="submit" id="submitBtn" class="btn btn-primary btn-mobile-lg fw-bold shadow-sm">
+                                ➕ Thêm Vào Danh Sách (Enter)
+                            </button>
+                            <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-mobile-lg fw-bold d-none" onclick="cancelEdit()">
+                                ❌ Hủy Sửa
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bảng Danh Sách Sản Phẩm -->
+        <div class="col-12 col-lg-7 col-xl-8">
+            <div class="card card-custom p-3 p-md-4" id="listCard">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-secondary">
+                        <i class="bi bi-list-stars"></i> Danh sách hàng hóa (<span id="rowCount" class="text-primary">0</span>)
+                    </h5>
+                    <button class="btn btn-outline-danger btn-sm" onclick="clearAllProducts()">
+                        🗑️ Xóa hết
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border-top">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Tên hàng / Nhóm</th>
+                                <th>Giá bán</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Đang tải dữ liệu từ hệ thống...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mobile-bottom-bar">
+    <button class="btn btn-warning text-white fw-bold btn-mobile-lg" onclick="downloadTemplate()">
+        📄 File Mẫu
+    </button>
+    <button class="btn btn-success fw-bold btn-mobile-lg" onclick="exportToExcel()">
+        📥 Xuất Excel KV
+    </button>
+</div>
+
+<script>
+    let products = [];
+
+    function initRealtimeDatabase() {
+        const productsRef = window.dbRef(window.db, 'products');
+        window.dbOnValue(productsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                products = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                }));
+            } else {
+                products = [];
+            }
+            renderTable();
+        }, (error) => {
+            console.error("Lỗi đọc dữ liệu: ", error);
+        });
+    }
+
+    async function handleCameraCapture(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const imgContainer = document.getElementById('imagePreviewContainer');
+        const loadingText = document.createElement('div');
+        loadingText.innerText = "Đang tải ảnh lên hệ thống...";
+        loadingText.className = "text-primary small fw-bold py-1";
+        imgContainer.appendChild(loadingText);
+
+        const formData = new FormData();
+        formData.append("image", file);
+        const apiKey = "3626bc6312650bea7a34cb699afd1d62"; 
+
+        try {
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                method: "POST",
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (imgContainer.contains(loadingText)) imgContainer.removeChild(loadingText);
+
+            if (result.success) {
+                const imageUrl = result.data.url;
+                const currentVal = document.getElementById('hinhAnh').value;
+                document.getElementById('hinhAnh').value = currentVal ? currentVal + "," + imageUrl : imageUrl;
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.className = 'preview-img';
+                imgContainer.appendChild(img);
+            } else {
+                alert("Tải ảnh thất bại, vui lòng thử lại!");
+            }
+        } catch (error) {
+            if (imgContainer.contains(loadingText)) imgContainer.removeChild(loadingText);
+            alert("Lỗi kết nối khi tải ảnh lên!");
+        }
+    }
+
+    function submitForm(event) {
+        event.preventDefault();
+
+        const editIndex = parseInt(document.getElementById('editIndex').value, 10);
+        const item = {
+            loaiHang: document.getElementById('loaiHang').value || "Hàng hóa",
+            nhomHang: document.getElementById('nhomHang').value || "Khác",
+            tenHang: document.getElementById('tenHang').value.trim(),
+            giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
+            giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
+            tonKho: 0,
+            khDat: 0,
+            tonMin: 1,
+            tonMax: 999999999,
+            hinhAnh: document.getElementById('hinhAnh').value,
+            trongLuong: 0,
+            dangKinhDoanh: 1,
+            banTrucTiep: 1
+        };
+
+        if (!item.tenHang) {
+            alert("Vui lòng nhập tên hàng!");
+            document.getElementById('tenHang').focus();
+            return;
+        }
+
+        if (editIndex >= 0 && editIndex < products.length) {
+            const currentProduct = products[editIndex];
+            if (currentProduct && currentProduct.id) {
+                const productRef = window.dbRef(window.db, 'products/' + currentProduct.id);
+                window.dbSet(productRef, item);
+            }
+            cancelEdit();
+        } else {
+            const productsRef = window.dbRef(window.db, 'products');
+            const newProductRef = window.dbPush(productsRef);
+            window.dbSet(newProductRef, item);
+        }
+
+        document.getElementById('tenHang').value = '';
+        document.getElementById('giaBan').value = '0';
+        document.getElementById('giaVon').value = '0';
+        document.getElementById('hinhAnh').value = '';
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+        document.getElementById('tenHang').focus();
+
+        const listCard = document.getElementById('listCard');
+        listCard.classList.add('highlight-card');
+        setTimeout(() => listCard.classList.remove('highlight-card'), 1000);
+    }
+
+    function editProduct(index) {
+        const p = products[index];
+        document.getElementById('editIndex').value = index;
+        document.getElementById('loaiHang').value = p.loaiHang;
+        document.getElementById('nhomHang').value = p.nhomHang;
+        document.getElementById('tenHang').value = p.tenHang;
+        document.getElementById('giaBan').value = p.giaBan;
+        document.getElementById('giaVon').value = p.giaVon;
+        document.getElementById('hinhAnh').value = p.hinhAnh;
+        
+        const imgContainer = document.getElementById('imagePreviewContainer');
+        imgContainer.innerHTML = '';
+        if (p.hinhAnh) {
+            p.hinhAnh.split(',').forEach(url => {
+                if (url.trim()) {
+                    const img = document.createElement('img');
+                    img.src = url.trim();
+                    img.className = 'preview-img';
+                    imgContainer.appendChild(img);
+                }
+            });
+        }
+        
+        document.getElementById('submitBtn').innerText = "💾 Cập Nhật Lại";
+        document.getElementById('submitBtn').className = "btn btn-warning text-white btn-mobile-lg fw-bold shadow-sm";
+        document.getElementById('cancelEditBtn').classList.remove('d-none');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.getElementById('tenHang').focus();
+    }
+
+    function cancelEdit() {
+        document.getElementById('editIndex').value = "-1";
+        document.getElementById('tenHang').value = '';
+        document.getElementById('giaBan').value = '0';
+        document.getElementById('giaVon').value = '0';
+        document.getElementById('hinhAnh').value = '';
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+        document.getElementById('nhomHang').value = 'Khác';
+
+        document.getElementById('submitBtn').innerText = "➕ Thêm Vào Danh Sách (Enter)";
+        document.getElementById('submitBtn').className = "btn btn-primary btn-mobile-lg fw-bold shadow-sm";
+        document.getElementById('cancelEditBtn').classList.add('d-none');
+    }
+
+    function renderTable() {
+        const count = products.length;
+        document.getElementById('rowCount').innerText = count;
+        document.getElementById('topRowCount').innerText = count;
+
+        const tbody = document.getElementById('tableBody');
+        if (count === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Chưa có hàng hóa nào. Hãy nhập thông tin!
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        products.forEach((p, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold">${index + 1}</td>
+                <td>
+                    <div class="fw-bold text-dark">${p.tenHang}</div>
+                    <small class="text-muted"><i class="bi bi-tag"></i> ${p.nhomHang || 'N/A'}</small>
+                </td>
+                <td class="text-success fw-bold">${p.giaBan.toLocaleString()} đ</td>
+                <td><span class="badge bg-light text-dark border">${p.tonKho}</span></td>
+                <td><span class="badge bg-success-subtle text-success">Đang KD</span></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="editProduct(${index})" title="Sửa">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProduct(${index})" title="Xóa">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function removeProduct(index) {
+        const p = products[index];
+        if (p && p.id) {
+            if (confirm(`Bạn có chắc muốn xóa sản phẩm "${p.tenHang}" không?`)) {
+                const productRef = window.dbRef(window.db, 'products/' + p.id);
+                window.dbSet(productRef, null);
+            }
+        }
+        if (parseInt(document.getElementById('editIndex').value, 10) === index) {
+            cancelEdit();
+        }
+    }
+
+    function clearAllProducts() {
+        if (confirm("Bạn có chắc chắn muốn xóa hết danh sách trên hệ thống không?")) {
+            const productsRef = window.dbRef(window.db, 'products');
+            window.dbSet(productsRef, null);
+            cancelEdit();
+        }
+    }
+
+    function downloadTemplate() {
+        let headers = [
+            "Loại hàng", "Nhóm hàng(3 Cấp)", "Mã hàng", "Mã vạch", "Tên hàng", 
+            "Tên hàng trên hóa đơn điện tử", "Thương hiệu", "Giá bán", "Giá vốn", 
+            "Tồn kho", "KH đặt", "Dự kiến hết hàng", "Tồn nhỏ nhất", "Tồn lớn nhất", 
+            "Thuộc tính", "Mã HH Liên quan", "Hình ảnh (url1,url2...)", "Trọng lượng", 
+            "Đang kinh doanh", "Được bán trực tiếp", "Mô tả", "Mẫu ghi chú", 
+            "Vị trí", "Hàng thành phần", "Thời gian tạo"
+        ];
+        let ws = XLSX.utils.aoa_to_sheet([headers]);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Products");
+        XLSX.writeFile(wb, "FileMau_KiotViet.xlsx");
+    }
+    
+    function exportToExcel() {
+        if (products.length === 0) {
+            alert("Chưa có dữ liệu hàng hóa để xuất Excel!");
+            return;
+        }
+
+        let exportData = products.map((p) => {
+            let formattedDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            let row = {};
+            row["Loại hàng"] = p.loaiHang;
+            row["Nhóm hàng(3 Cấp)"] = p.nhomHang;
+            row["Mã hàng"] = "";
+            row["Mã vạch"] = "";
+            row["Tên hàng"] = p.tenHang;
+            row["Tên hàng trên hóa đơn điện tử"] = "";
+            row["Thương hiệu"] = "";
+            row["Giá bán"] = p.giaBan;
+            row["Giá vốn"] = p.giaVon;
+            row["Tồn kho"] = p.tonKho;
+            row["KH đặt"] = p.khDat;
+            row["Dự kiến hết hàng"] = "";
+            row["Tồn nhỏ nhất"] = p.tonMin;
+            row["Tồn lớn nhất"] = p.tonMax;
+            row["Thuộc tính"] = "";
+            row["Mã HH Liên quan"] = "";
+            row["Hình ảnh (url1,url2...)"] = p.hinhAnh;
+            row["Trọng lượng"] = p.trongLuong;
+            row["Đang kinh doanh"] = p.dangKinhDoanh;
+            row["Được bán trực tiếp"] = p.banTrucTiep;
+            row["Mô tả"] = "";
+            row["Mẫu ghi chú"] = "";
+            row["Vị trí"] = "";
+            row["Hàng thành phần"] = "";
+            row["Thời gian tạo"] = formattedDate;
+            return row;
+        });
+
+        let ws = XLSX.utils.json_to_sheet(exportData);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Products");
+        let todayStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        XLSX.writeFile(wb, `Products_KV${todayStr}.xlsx`);
+    }
+</script>
+</body>
+</html>
