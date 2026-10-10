@@ -418,13 +418,12 @@
         }
 
         let exportData = products.map((p, index) => {
-            let codeNum = 4536 + index;
             let formattedDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
             
             let row = {};
             row["Loại hàng"] = p.loaiHang;
             row["Nhóm hàng(3 Cấp)"] = p.nhomHang;
-            row["Mã hàng"] = "SP" + String(codeNum).padStart(6, '0');
+            row["Mã hàng"] = ""; // Để trống cột Mã hàng theo yêu cầu
             row["Mã vạch"] = "";
             row["Tên hàng"] = p.tenHang;
             row["Tên hàng trên hóa đơn điện tử"] = "";
