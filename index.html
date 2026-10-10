@@ -105,10 +105,10 @@
                 <span id="topRowCount" style="font-size: 1.1rem;">0</span> sản phẩm
             </div>
             <div class="d-none d-md-flex gap-2">
-                <button class="btn btn-warning text-white fw-semibold rounded-3 px-3" id="btnTemplate">
+                <button class="btn btn-warning text-white fw-semibold rounded-3 px-3" onclick="downloadTemplate()">
                     <i class="bi bi-file-earmark-excel"></i> File Mẫu
                 </button>
-                <button class="btn btn-success fw-semibold rounded-3 px-3" id="btnExport">
+                <button class="btn btn-success fw-semibold rounded-3 px-3" onclick="exportToExcel()">
                     <i class="bi bi-download"></i> Xuất Excel KV
                 </button>
             </div>
@@ -121,7 +121,7 @@
         <!-- Form Nhập Liệu / Sửa (Bên trái) -->
         <div class="col-12 col-lg-5 col-xl-4">
             <div class="card card-custom p-3 p-md-4 sticky-top" style="top: 20px; z-index: 100;">
-                <form id="productForm">
+                <form id="productForm" onsubmit="submitForm(event)">
                     <input type="hidden" id="editIndex" value="-1">
                     <div class="row g-3">
                         <div class="col-12">
@@ -162,8 +162,8 @@
                             <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
-                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none">
-                                <button type="button" class="btn btn-outline-primary fw-semibold" id="btnCamera">
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
                                     📸 Chụp
                                 </button>
                             </div>
@@ -174,7 +174,7 @@
                             <button type="submit" id="submitBtn" class="btn btn-primary btn-mobile-lg fw-bold shadow-sm">
                                 ➕ Thêm Vào Danh Sách (Enter)
                             </button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-mobile-lg fw-bold d-none">
+                            <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-mobile-lg fw-bold d-none" onclick="cancelEdit()">
                                 ❌ Hủy Sửa
                             </button>
                         </div>
@@ -190,7 +190,7 @@
                     <h5 class="fw-bold mb-0 text-secondary">
                         <i class="bi bi-list-stars"></i> Danh sách hàng hóa (<span id="rowCount" class="text-primary">0</span>)
                     </h5>
-                    <button class="btn btn-outline-danger btn-sm" id="btnClearAll">
+                    <button class="btn btn-outline-danger btn-sm" onclick="clearAllProducts()">
                         🗑️ Xóa hết
                     </button>
                 </div>
@@ -223,10 +223,10 @@
 </div>
 
 <div class="mobile-bottom-bar">
-    <button class="btn btn-warning text-white fw-bold btn-mobile-lg" id="btnTemplateMobile">
+    <button class="btn btn-warning text-white fw-bold btn-mobile-lg" onclick="downloadTemplate()">
         📄 File Mẫu
     </button>
-    <button class="btn btn-success fw-bold btn-mobile-lg" id="btnExportMobile">
+    <button class="btn btn-success fw-bold btn-mobile-lg" onclick="exportToExcel()">
         📥 Xuất Excel KV
     </button>
 </div>
@@ -234,95 +234,74 @@
 <script>
     let products = [];
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Gán sự kiện cho form submit
-        const productForm = document.getElementById('productForm');
-        productForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const editIndex = parseInt(document.getElementById('editIndex').value, 10);
-            const item = {
-                loaiHang: document.getElementById('loaiHang').value || "Hàng hóa",
-                nhomHang: document.getElementById('nhomHang').value || "Khác",
-                tenHang: document.getElementById('tenHang').value.trim(),
-                giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
-                giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
-                tonKho: 0,
-                khDat: 0,
-                tonMin: 1,
-                tonMax: 999999999,
-                hinhAnh: document.getElementById('hinhAnh').value,
-                trongLuong: 0,
-                dangKinhDoanh: 1,
-                banTrucTiep: 1
+    function handleCameraCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                const currentVal = document.getElementById('hinhAnh').value;
+                document.getElementById('hinhAnh').value = currentVal ? currentVal + "," + base64String : base64String;
+                
+                const imgContainer = document.getElementById('imagePreviewContainer');
+                const img = document.createElement('img');
+                img.src = base64String;
+                img.className = 'preview-img';
+                imgContainer.appendChild(img);
             };
+            reader.readAsDataURL(file);
+        }
+    }
 
-            if (!item.tenHang) {
-                alert("Vui lòng nhập tên hàng!");
-                document.getElementById('tenHang').focus();
-                return;
-            }
+    function submitForm(event) {
+        event.preventDefault();
 
-            if (editIndex >= 0 && editIndex < products.length) {
-                products[editIndex] = item;
-                cancelEdit();
-            } else {
-                products.push(item);
-            }
+        const editIndex = parseInt(document.getElementById('editIndex').value, 10);
+        const item = {
+            loaiHang: document.getElementById('loaiHang').value || "Hàng hóa",
+            nhomHang: document.getElementById('nhomHang').value || "Khác",
+            tenHang: document.getElementById('tenHang').value.trim(),
+            giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
+            giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
+            tonKho: 0,
+            khDat: 0,
+            tonMin: 1,
+            tonMax: 999999999,
+            hinhAnh: document.getElementById('hinhAnh').value,
+            trongLuong: 0,
+            dangKinhDoanh: 1,
+            banTrucTiep: 1
+        };
 
-            renderTable();
-
-            // Reset form và focus ô Tên hàng
-            document.getElementById('tenHang').value = '';
-            document.getElementById('giaBan').value = '0';
-            document.getElementById('giaVon').value = '0';
-            document.getElementById('hinhAnh').value = '';
-            document.getElementById('imagePreviewContainer').innerHTML = '';
+        if (!item.tenHang) {
+            alert("Vui lòng nhập tên hàng!");
             document.getElementById('tenHang').focus();
+            return;
+        }
 
-            const listCard = document.getElementById('listCard');
-            listCard.classList.add('highlight-card');
-            setTimeout(() => {
-                listCard.classList.remove('highlight-card');
-            }, 1000);
-        });
+        if (editIndex >= 0 && editIndex < products.length) {
+            products[editIndex] = item;
+            cancelEdit();
+        } else {
+            products.push(item);
+        }
 
-        // Nút chụp ảnh
-        document.getElementById('btnCamera').addEventListener('click', function() {
-            document.getElementById('cameraInput').click();
-        });
+        renderTable();
 
-        document.getElementById('cameraInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64String = e.target.result;
-                    const currentVal = document.getElementById('hinhAnh').value;
-                    document.getElementById('hinhAnh').value = currentVal ? currentVal + "," + base64String : base64String;
-                    
-                    const imgContainer = document.getElementById('imagePreviewContainer');
-                    const img = document.createElement('img');
-                    img.src = base64String;
-                    img.className = 'preview-img';
-                    imgContainer.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        // Reset form và focus ô Tên hàng để nhập tiếp liên tục
+        document.getElementById('tenHang').value = '';
+        document.getElementById('giaBan').value = '0';
+        document.getElementById('giaVon').value = '0';
+        document.getElementById('hinhAnh').value = '';
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+        document.getElementById('tenHang').focus();
 
-        // Nút hủy sửa
-        document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
-
-        // Nút xóa hết
-        document.getElementById('btnClearAll').addEventListener('click', clearAllProducts);
-
-        // Nút xuất file & tải mẫu
-        document.getElementById('btnTemplate').addEventListener('click', downloadTemplate);
-        document.getElementById('btnTemplateMobile').addEventListener('click', downloadTemplate);
-        document.getElementById('btnExport').addEventListener('click', exportToExcel);
-        document.getElementById('btnExportMobile').addEventListener('click', exportToExcel);
-    });
+        const listCard = document.getElementById('listCard');
+        listCard.classList.add('highlight-card');
+        setTimeout(() => {
+            listCard.classList.remove('highlight-card');
+        }, 1000);
+    }
 
     function editProduct(index) {
         const p = products[index];
@@ -439,4 +418,45 @@
         }
 
         let exportData = products.map((p, index) => {
-            let codeNum = 45
+            let codeNum = 4536 + index;
+            let formattedDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            
+            let row = {};
+            row["Loại hàng"] = p.loaiHang;
+            row["Nhóm hàng(3 Cấp)"] = p.nhomHang;
+            row["Mã hàng"] = "SP" + String(codeNum).padStart(6, '0');
+            row["Mã vạch"] = "";
+            row["Tên hàng"] = p.tenHang;
+            row["Tên hàng trên hóa đơn điện tử"] = "";
+            row["Thương hiệu"] = "";
+            row["Giá bán"] = p.giaBan;
+            row["Giá vốn"] = p.giaVon;
+            row["Tồn kho"] = p.tonKho;
+            row["KH đặt"] = p.khDat;
+            row["Dự kiến hết hàng"] = "";
+            row["Tồn nhỏ nhất"] = p.tonMin;
+            row["Tồn lớn nhất"] = p.tonMax;
+            row["Thuộc tính"] = "";
+            row["Mã HH Liên quan"] = "";
+            row["Hình ảnh (url1,url2...)"] = p.hinhAnh;
+            row["Trọng lượng"] = p.trongLuong;
+            row["Đang kinh doanh"] = p.dangKinhDoanh;
+            row["Được bán trực tiếp"] = p.banTrucTiep;
+            row["Mô tả"] = "";
+            row["Mẫu ghi chú"] = "";
+            row["Vị trí"] = "";
+            row["Hàng thành phần"] = "";
+            row["Thời gian tạo"] = formattedDate;
+            return row;
+        });
+
+        let ws = XLSX.utils.json_to_sheet(exportData);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Products");
+        
+        let todayStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        XLSX.writeFile(wb, `Products_KV${todayStr}.xlsx`);
+    }
+</script>
+</body>
+</html>
