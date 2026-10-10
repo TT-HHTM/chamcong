@@ -2,455 +2,423 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DUNG THÙY PHẠM - Hệ Thống Chấm Công</title>
-    <!-- Font chữ Serif & Sans-serif cao cấp từ Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nhập Liệu Hàng Hóa - Điện Thoại & Máy Tính</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary-black: #121212;
-            --accent-gold: #c5a059;
-            --light-gold: #e6ca65;
-            --bg-gray: #f8f7f5;
-            --card-bg: #ffffff;
-            --border-color: #e2dfd8;
-            --text-dark: #222222;
-            --text-muted: #777777;
-            --success-color: #2e7d32;
-            --danger-color: #c62828;
+            --primary-color: #0d6efd;
+            --bg-color: #f4f6f9;
         }
-
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-        }
-
         body { 
-            background-color: var(--bg-gray); 
-            font-family: 'Montserrat', sans-serif; 
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
+            background-color: var(--bg-color); 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding-bottom: 80px; /* space for fixed mobile bottom bar */
         }
-
-        /* Luxury Header Section */
-        .brand-header {
-            text-align: center;
-            margin-bottom: 35px;
-            width: 100%;
-            max-width: 950px;
-        }
-
-        .brand-subtitle {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--accent-gold);
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .brand-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 38px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--primary-black);
-            text-transform: uppercase;
-            line-height: 1.1;
-        }
-
-        .brand-divider {
-            width: 60px;
-            height: 1px;
-            background-color: var(--accent-gold);
-            margin: 12px auto;
-        }
-
-        .brand-contact {
-            font-size: 13px;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            font-weight: 500;
-            line-height: 1.6;
-        }
-
-        .brand-contact span {
-            color: var(--primary-black);
-            font-weight: 600;
-        }
-
-        /* Layout Container */
-        .container { 
-            max-width: 950px; 
-            width: 100%; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 30px; 
-        }
-
-        @media (max-width: 768px) { 
-            .container { grid-template-columns: 1fr; } 
-            .brand-title { font-size: 30px; }
-        }
-
-        /* Card Styling */
-        .card { 
-            background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: 4px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        h2 { 
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 24px; 
-            color: var(--primary-black); 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 20px; 
-            border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 10px; 
-            text-align: center;
-        }
-
-        /* Status Banners */
-        .status-banner {
-            display: none;
-            background-color: #fef8ec;
-            color: #8a6d3b;
-            border: 1px solid #f5e7c6;
-            padding: 10px;
-            border-radius: 2px;
-            margin-bottom: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            letter-spacing: 1px;
-        }
-
-        .location-info {
-            font-size: 11px;
-            padding: 10px;
-            border-radius: 2px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .loc-loading { background-color: #f2f2f2; color: #666; }
-        .loc-success { background-color: #eaf5ea; color: var(--success-color); border: 1px solid #c8e6c9; }
-        .loc-error { background-color: #fdeaea; color: var(--danger-color); border: 1px solid #ffcdd2; }
-
-        /* Input Form */
-        .form-group { margin-top: 10px; }
-        .field { margin-bottom: 20px; }
-        
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 600; 
-            color: var(--primary-black); 
-            font-size: 11px; 
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        input, select { 
-            width: 100%; 
-            padding: 12px 15px; 
-            border: 1px solid var(--border-color); 
-            border-radius: 2px; 
-            font-size: 13px; 
-            font-family: 'Montserrat', sans-serif;
-            background-color: #fafafa;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-gold);
-            background-color: #fff;
-        }
-
-        input:disabled, select:disabled {
-            background-color: #f0f0f0;
-            cursor: not-allowed;
-            color: #777;
-            font-weight: 600;
-        }
-
-        /* Buttons */
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; }
-        
-        .btn { 
-            flex: 1; 
-            color: white; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 2px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            font-size: 12px; 
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease; 
-        }
-
-        .btn-in { 
-            background-color: var(--primary-black); 
-            border: 1px solid var(--primary-black);
-        }
-
-        .btn-in:hover:not(:disabled) { 
-            background-color: var(--accent-gold); 
-            border-color: var(--accent-gold);
-        }
-
-        .btn-out { 
-            background-color: transparent; 
-            color: var(--danger-color);
-            border: 1px solid var(--danger-color);
-        }
-
-        .btn-out:hover:not(:disabled) { 
-            background-color: var(--danger-color); 
+        .app-header {
+            background: linear-gradient(135deg, #1f4e78 0%, #0d6efd 100%);
             color: white;
+            padding: 16px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
-        .btn:disabled { 
-            opacity: 0.3; 
-            cursor: not-allowed; 
-            border-color: #ccc;
-            background-color: #eee;
-            color: #888;
+        .card-custom {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            background: white;
         }
-
-        /* History Logs */
-        .log-list { max-height: 380px; overflow-y: auto; }
-        
-        .log-item { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 15px 0; 
-            border-bottom: 1px solid #f0f0f0; 
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+            margin-bottom: 4px;
         }
-
-        .log-info { flex: 1; }
-        
-        .log-name { 
-            font-weight: 600; 
-            color: var(--primary-black); 
-            font-size: 13px; 
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
         }
-
-        .log-id { 
-            font-size: 11px; 
-            color: var(--accent-gold); 
-            font-weight: 600; 
-            margin-left: 5px;
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
         }
-
-        .log-time { 
-            font-size: 11px; 
-            color: var(--text-muted); 
-            margin-top: 4px; 
+        /* Mobile Specific Optimization */
+        @media (max-width: 768px) {
+            .app-header h3 { font-size: 1.25rem; }
+            .btn-mobile-lg {
+                padding: 12px;
+                font-size: 1rem;
+                font-weight: 600;
+                border-radius: 12px;
+            }
+            .mobile-bottom-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+                padding: 10px 16px;
+                z-index: 1000;
+                display: flex;
+                gap: 10px;
+            }
+            .mobile-bottom-bar button {
+                flex: 1;
+            }
+            .table-responsive {
+                font-size: 0.85rem;
+            }
         }
-
-        .badge { 
-            padding: 4px 10px; 
-            border-radius: 2px; 
-            font-size: 10px; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600; 
+        @media (min-width: 769px) {
+            .mobile-bottom-bar { display: none; }
         }
-
-        .bg-in { background-color: #eaf5ea; color: var(--success-color); }
-        .bg-out { background-color: #fdeaea; color: var(--danger-color); }
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .preview-img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
 
-<div class="brand-header">
-    <div class="brand-subtitle">HAUTE COUTURE & FASHION</div>
-    <h1 class="brand-title">DUNG THÙY PHẠM</h1>
-    <div class="brand-divider"></div>
-    <div class="brand-contact">
-        📍 <span>168 Hải Thượng Lãn Ông, Hạc Thành, Thanh Hóa</span><br>
-        📞 HOTLINE: <span>0962811996</span>
+<!-- Header Top Bar -->
+<div class="app-header mb-4">
+    <div class="container-fluid max-width-lg d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fs-3">📦</span>
+            <div>
+                <h3 class="mb-0 fw-bold">Nhập Liệu Hàng Hóa</h3>
+                <small class="opacity-75 d-none d-sm-inline">Tối ưu giao diện Máy tính & Điện thoại</small>
+            </div>
+        </div>
+        <div class="d-none d-md-flex gap-2">
+            <button class="btn btn-warning text-white fw-semibold rounded-3 px-3" onclick="downloadTemplate()">
+                <i class="bi bi-file-earmark-excel"></i> File Mẫu
+            </button>
+            <button class="btn btn-success fw-semibold rounded-3 px-3" onclick="exportToExcel()">
+                <i class="bi bi-download"></i> Xuất File Excel
+            </button>
+        </div>
     </div>
 </div>
 
-<!-- KHỐI CHẤM CÔNG VÀ LỊCH SỬ -->
-<div class="container">
-    <div class="card">
-        <h2>Chấm Công Trực Tuyến</h2>
+<div class="container-fluid px-3 px-md-4 max-width-lg">
+    <div class="row g-4">
+        <!-- Form Nhập Liệu -->
+        <div class="col-12 col-lg-5 col-xl-4">
+            <div class="card card-custom p-3 p-md-4 sticky-top" style="top: 20px; z-index: 100;">
+                <h5 class="text-primary fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-plus-circle-fill"></i> Thêm Hàng Hóa Mới
+                </h5>
+                
+                <form id="productForm" onsubmit="handleAddProduct(event)">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Loại hàng</label>
+                            <input type="text" class="form-control" id="loaiHang" value="Hàng hóa" required>
+                        </div>
 
-        <div id="statusBanner" class="status-banner">
-            🔒 ĐANG TRONG CA LÀM VIỆC
+                        <div class="col-12">
+                            <label class="form-label">Nhóm hàng (3 Cấp)</label>
+                            <input type="text" class="form-control" id="nhomHang" placeholder="VD: Thời trang > Áo > Áo phông" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Tên hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Giá bán (VNĐ)</label>
+                            <input type="number" class="form-control" id="giaBan" value="0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Giá vốn (VNĐ)</label>
+                            <input type="number" class="form-control" id="giaVon" value="0" required>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Tồn kho</label>
+                            <input type="number" class="form-control" id="tonKho" value="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">KH đặt</label>
+                            <input type="number" class="form-control" id="khDat" value="0">
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Tồn nhỏ nhất</label>
+                            <input type="number" class="form-control" id="tonMin" value="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Tồn lớn nhất</label>
+                            <input type="number" class="form-control" id="tonMax" value="999999999">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
+                                    📸 Chụp
+                                </button>
+                            </div>
+                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Trọng lượng (kg)</label>
+                            <input type="number" step="0.01" class="form-control" id="trongLuong" value="0">
+                        </div>
+
+                        <div class="col-6">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="dangKinhDoanh" checked>
+                                <label class="form-check-label fw-semibold" for="dangKinhDoanh">Đang kinh doanh</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="banTrucTiep" checked>
+                                <label class="form-check-label fw-semibold" for="banTrucTiep">Bán trực tiếp</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4 d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-mobile-lg fw-bold shadow-sm">
+                                ➕ Thêm Vào Danh Sách (Enter)
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div id="locationStatus" class="location-info loc-loading">
-            🔄 Đang xác thực vị trí GPS...
-        </div>
-        
-        <div class="form-group">
-            <div class="field">
-                <label for="empId">Mã Nhân Viên</label>
-                <input type="text" id="empId" placeholder="Nhập mã NV (Ví dụ: NV01)">
-            </div>
+        <!-- Bảng Danh Sách Sản Phẩm -->
+        <div class="col-12 col-lg-7 col-xl-8">
+            <div class="card card-custom p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-secondary">
+                        <i class="bi bi-list-stars"></i> Danh sách hàng hóa (<span id="rowCount" class="text-primary">0</span>)
+                    </h5>
+                    <button class="btn btn-outline-danger btn-sm d-md-none" onclick="clearAllProducts()">
+                        🗑️ Xóa hết
+                    </button>
+                </div>
 
-            <div class="field">
-                <label for="empName">Họ và Tên</label>
-                <input type="text" id="empName" placeholder="Nhập họ tên đầy đủ">
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-in" id="btnIn" onclick="handleCheckIn()" disabled>Vào Ca</button>
-                <button class="btn btn-out" id="btnOut" onclick="handleCheckOut()" disabled>Hết Ca</button>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border-top">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Tên hàng / Nhóm</th>
+                                <th>Giá bán</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Chưa có hàng hóa nào. Hãy nhập thông tin ở form bên cạnh/trên!
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="card">
-        <h2>Lịch Sử Chấm Công</h2>
-        <div class="log-list" id="logs"></div>
-    </div>
+<!-- Thanh Thao Tác Cố Định Trên Điện Thoại (Mobile Bottom Bar) -->
+<div class="mobile-bottom-bar">
+    <button class="btn btn-warning text-white fw-bold btn-mobile-lg" onclick="downloadTemplate()">
+        📄 File Mẫu
+    </button>
+    <button class="btn btn-success fw-bold btn-mobile-lg" onclick="exportToExcel()">
+        📥 Xuất File Excel
+    </button>
 </div>
 
 <script>
-    // URL Google Apps Script
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDBa3VNfLYCSdzQuGfBhNEsdKTDa6Hr9ExZ-7b4xlD4b2ZttKUMY81ntavVeAc6DTVjQ/exec";
+    let products = [];
 
-    // Tọa độ mặc định và giới hạn bán kính (mét)
-    const TARGET_LAT = 19.778790;
-    const TARGET_LNG = 105.772388;
-    const MAX_DISTANCE_METERS = 300;
-
-    const logsContainer = document.getElementById('logs');
-    const empIdInput = document.getElementById('empId');
-    const empNameInput = document.getElementById('empName');
-    const btnIn = document.getElementById('btnIn');
-    const btnOut = document.getElementById('btnOut');
-    const statusBanner = document.getElementById('statusBanner');
-    const locationStatus = document.getElementById('locationStatus');
-
-    let currentLocation = "Không có thông tin vị trí";
-    let isWithinAllowedArea = false;
-
-    // Khoảng cách tính toán vị trí GPS
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371000;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
-
-    function requestLocation() {
-        if (!navigator.geolocation) {
-            updateLocationStatus("❌ Trình duyệt không hỗ trợ định vị GPS!", "error");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-                
-                const latStr = userLat.toFixed(6);
-                const lngStr = userLng.toFixed(6);
-                currentLocation = `${latStr}, ${lngStr} (https://maps.google.com/?q=${latStr},${lngStr})`;
-                
-                const distance = calculateDistance(userLat, userLng, TARGET_LAT, TARGET_LNG);
-
-                if (distance <= MAX_DISTANCE_METERS) {
-                    isWithinAllowedArea = true;
-                    updateLocationStatus(`📍 Hợp lệ (Cách cửa hàng ${Math.round(distance)}m)`, "success");
+    function handleCameraCapture(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                const currentVal = document.getElementById('hinhAnh').value;
+                if (currentVal) {
+                    document.getElementById('hinhAnh').value = currentVal + "," + base64String;
                 } else {
-                    isWithinAllowedArea = false;
-                    updateLocationStatus(`❌ Không hợp lệ (Cách cửa hàng ${Math.round(distance)}m, vượt quá ${MAX_DISTANCE_METERS}m)`, "error");
+                    document.getElementById('hinhAnh').value = base64String;
                 }
                 
-                checkCurrentState();
-            },
-            (error) => {
-                let errorMsg = "❌ Yêu cầu bật quyền GPS để chấm công!";
-                if (error.code === error.PERMISSION_DENIED) {
-                    errorMsg = "❌ Bạn đã từ chối quyền vị trí. Vui lòng bật GPS!";
-                }
-                updateLocationStatus(errorMsg, "error");
-                btnIn.disabled = true;
-                btnOut.disabled = true;
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    }
-
-    function updateLocationStatus(msg, type) {
-        locationStatus.innerText = msg;
-        locationStatus.className = `location-info loc-${type}`;
-    }
-
-    function checkCurrentState() {
-        const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        if (activeShift) {
-            empIdInput.value = activeShift.empId || '';
-            empNameInput.value = activeShift.empName || '';
-            lockUI();
-        } else {
-            unlockUI();
+                // Show thumbnail
+                const imgContainer = document.getElementById('imagePreviewContainer');
+                const img = document.createElement('img');
+                img.src = base64String;
+                img.className = 'preview-img';
+                imgContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
         }
     }
 
-    async function handleCheckIn() {
-        const empId = empIdInput.value.trim().toUpperCase();
-        const empName = empNameInput.value.trim();
+    function handleAddProduct(e) {
+        e.preventDefault();
 
-        if (!empId || !empName) {
-            alert("Vui lòng nhập đầy đủ Mã Nhân Viên và Họ Tên!");
+        const item = {
+            loaiHang: document.getElementById('loaiHang').value || "Hàng hóa",
+            nhomHang: document.getElementById('nhomHang').value,
+            tenHang: document.getElementById('tenHang').value,
+            giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
+            giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
+            tonKho: parseInt(document.getElementById('tonKho').value) || 0,
+            khDat: parseInt(document.getElementById('khDat').value) || 0,
+            tonMin: parseInt(document.getElementById('tonMin').value) || 1,
+            tonMax: parseInt(document.getElementById('tonMax').value) || 999999999,
+            hinhAnh: document.getElementById('hinhAnh').value,
+            trongLuong: parseFloat(document.getElementById('trongLuong').value) || 0,
+            dangKinhDoanh: document.getElementById('dangKinhDoanh').checked ? "TRUE" : "FALSE",
+            banTrucTiep: document.getElementById('banTrucTiep').checked ? "TRUE" : "FALSE"
+        };
+
+        products.push(item);
+        renderTable();
+        
+        // Reset form & set defaults
+        document.getElementById('productForm').reset();
+        document.getElementById('loaiHang').value = "Hàng hóa";
+        document.getElementById('tonMin').value = "1";
+        document.getElementById('tonMax').value = "999999999";
+        document.getElementById('dangKinhDoanh').checked = true;
+        document.getElementById('banTrucTiep').checked = true;
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+
+        // Auto focus back to product name input
+        document.getElementById('tenHang').focus();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        document.getElementById('rowCount').innerText = products.length;
+
+        if (products.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Chưa có hàng hóa nào. Hãy nhập thông tin!
+                    </td>
+                </tr>
+            `;
             return;
         }
 
-        if (!isWithinAllowedArea) {
-            alert(`Bạn đang ở ngoài phạm vi cho phép (${MAX_DISTANCE_METERS}m). Không thể vào ca!`);
-            return;
-        }
-
-        localStorage.setItem('activeShift', JSON.stringify({ empId, empName }));
-        lockUI();
-
-        await sendAttendance('Vào ca', empId, empName);
+        tbody.innerHTML = '';
+        products.forEach((p, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold">${index + 1}</td>
+                <td>
+                    <div class="fw-bold text-dark">${p.tenHang}</div>
+                    <small class="text-muted"><i class="bi bi-tag"></i> ${p.nhomHang || 'N/A'}</small>
+                </td>
+                <td class="text-success fw-bold">${p.giaBan.toLocaleString()} đ</td>
+                <td><span class="badge bg-light text-dark border">${p.tonKho}</span></td>
+                <td>
+                    <span class="badge ${p.dangKinhDoanh === 'TRUE' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'} badge-status">
+                        ${p.dangKinhDoanh === 'TRUE' ? 'Đang KD' : 'Ngừng KD'}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="deleteItem(${index})" title="Xóa">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
-    async function handleCheckOut() {
-        const activeShift = JSON.parse(localStorage.getItem('activeShift'));
-        const empId = empIdInput.value.trim().toUpperCase() || (activeShift ? activeShift.empId : '');
-        const empName = empNameInput.value.trim() || (activeShift ? activeShift.empName : '');
+    function deleteItem(index) {
+        products.splice(index, 1);
+        renderTable();
+    }
 
-        if (!empId || !empName) {
-            alert("Vui lòng nhập Mã Nhân Viên và Họ Tên để hết ca!");
+    function clearAllProducts() {
+        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách đã nhập?")) {
+            products = [];
+            renderTable();
+        }
+    }
+
+    function exportToExcel() {
+        if (products.length === 0) {
+            alert("Vui lòng nhập ít nhất một sản phẩm trước khi xuất file!");
             return;
         }
 
-        await sendAttendance('Hết ca', empId, empName);
+        const data = products.map(p => ({
+            "Loại hàng": p.loaiHang,
+            "Nhóm hàng(3 Cấp)": p.nhomHang,
+            "Tên hàng": p.tenHang,
+            "Giá bán": p.giaBan,
+            "Giá vốn": p.giaVon,
+            "Tồn kho": p.tonKho,
+            "KH đặt": p.khDat,
+            "Tồn nhỏ nhất": p.tonMin,
+            "Tồn lớn nhất": p.tonMax,
+            "Hình ảnh (url1,url2...)": p.hinhAnh,
+            "Trọng lượng": p.trongLuong,
+            "Đang kinh doanh": p.dangKinhDoanh,
+            "Được bán trực tiếp": p.banTrucTiep
+        }));
 
-        localStorage.removeItem('activeShift');
-        unlockUI();
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Danh mục hàng hóa");
+        XLSX.writeFile(workbook, "Products_Export.xlsx");
+    }
+
+    function downloadTemplate() {
+        const sampleData = [{
+            "Loại hàng": "Hàng hóa",
+            "Nhóm hàng(3 Cấp)": "Điện tử > Điện thoại > Smartphone",
+            "Tên hàng": "Điện thoại mẫu XYZ",
+            "Giá bán": 5000000,
+            "Giá vốn": 4000000,
+            "Tồn kho": 10,
+            "KH đặt": 2,
+            "Tồn nhỏ nhất": 1,
+            "Tồn lớn nhất": 999999999,
+            "Hình ảnh (url1,url2...)": "https://example.com/img1.jpg",
+            "Trọng lượng": 0.35,
+            "Đang kinh doanh": "TRUE",
+            "Được bán trực tiếp": "TRUE"
+        }];
+
+        const worksheet = XLSX.utils.json_to_sheet(sampleData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+        XLSX.writeFile(workbook, "File_Mau_Nhap_Lieu.xlsx");
+    }
+</script>
+</body>
+</html>
