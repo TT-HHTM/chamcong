@@ -146,6 +146,18 @@
                             <input type="number" class="form-control" id="giaVon" value="0" required>
                         </div>
 
+                        <div class="col-12">
+                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
+                                    📸 Chụp
+                                </button>
+                            </div>
+                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
+                        </div>
+
                         <div class="col-6">
                             <label class="form-label">Tồn kho</label>
                             <input type="number" class="form-control" id="tonKho" value="0">
@@ -162,18 +174,6 @@
                         <div class="col-6">
                             <label class="form-label">Tồn lớn nhất</label>
                             <input type="number" class="form-control" id="tonMax" value="999999999">
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
-                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
-                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
-                                    📸 Chụp
-                                </button>
-                            </div>
-                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
                         </div>
 
                         <div class="col-12">
