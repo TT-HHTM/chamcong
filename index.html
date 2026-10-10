@@ -158,6 +158,14 @@
                 <form id="productForm" onsubmit="submitForm(event)">
                     <input type="hidden" id="editIndex" value="-1">
                     <div class="row g-3">
+			<div class="col-12">
+                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
+                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
+                                    📸 Chụp
+                                </button>
                         <div class="col-12">
                             <label class="form-label">Loại hàng <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="loaiHang" value="Hàng hóa" required>
@@ -192,14 +200,7 @@
                             <input type="number" class="form-control" id="giaVon" value="0" required>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
-                                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none" onchange="handleCameraCapture(event)">
-                                <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
-                                    📸 Chụp
-                                </button>
+                        
                             </div>
                             <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
                         </div>
