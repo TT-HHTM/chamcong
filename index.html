@@ -158,7 +158,7 @@
                 <form id="productForm" onsubmit="submitForm(event)">
                     <input type="hidden" id="editIndex" value="-1">
                     <div class="row g-3">
-			<div class="col-12">
+                        <div class="col-12">
                             <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="hinhAnh" placeholder="Chụp ảnh hoặc dán URL">
@@ -166,6 +166,10 @@
                                 <button type="button" class="btn btn-outline-primary fw-semibold" onclick="document.getElementById('cameraInput').click()">
                                     📸 Chụp
                                 </button>
+                            </div>
+                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Loại hàng <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="loaiHang" value="Hàng hóa" required>
@@ -191,18 +195,18 @@
                             <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
                         </div>
 
-                        <div class="col-6">
-                            <label class="form-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                        <!-- Đã đưa Giá bán, Giá vốn và Tồn kho chung một hàng (chia cột col-4) -->
+                        <div class="col-4">
+                            <label class="form-label">Giá bán <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="giaBan" value="0" required>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label">Giá vốn (VNĐ)</label>
+                        <div class="col-4">
+                            <label class="form-label">Giá vốn</label>
                             <input type="number" class="form-control" id="giaVon" value="0" required>
                         </div>
-
-                        
-                            </div>
-                            <div id="imagePreviewContainer" class="d-flex gap-2 mt-2 overflow-x-auto"></div>
+                        <div class="col-4">
+                            <label class="form-label">Tồn kho</label>
+                            <input type="number" class="form-control" id="tonKho" value="0" required>
                         </div>
 
                         <div class="col-12 mt-4 d-grid gap-2">
@@ -338,7 +342,7 @@
             tenHang: document.getElementById('tenHang').value.trim(),
             giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
             giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
-            tonKho: 0,
+            tonKho: parseFloat(document.getElementById('tonKho').value) || 0,
             khDat: 0,
             tonMin: 1,
             tonMax: 999999999,
@@ -370,6 +374,7 @@
         document.getElementById('tenHang').value = '';
         document.getElementById('giaBan').value = '0';
         document.getElementById('giaVon').value = '0';
+        document.getElementById('tonKho').value = '0';
         document.getElementById('hinhAnh').value = '';
         document.getElementById('imagePreviewContainer').innerHTML = '';
         document.getElementById('tenHang').focus();
@@ -387,6 +392,7 @@
         document.getElementById('tenHang').value = p.tenHang;
         document.getElementById('giaBan').value = p.giaBan;
         document.getElementById('giaVon').value = p.giaVon;
+        document.getElementById('tonKho').value = p.tonKho !== undefined ? p.tonKho : 0;
         document.getElementById('hinhAnh').value = p.hinhAnh;
         
         const imgContainer = document.getElementById('imagePreviewContainer');
@@ -415,6 +421,7 @@
         document.getElementById('tenHang').value = '';
         document.getElementById('giaBan').value = '0';
         document.getElementById('giaVon').value = '0';
+        document.getElementById('tonKho').value = '0';
         document.getElementById('hinhAnh').value = '';
         document.getElementById('imagePreviewContainer').innerHTML = '';
         document.getElementById('nhomHang').value = 'Khác';
