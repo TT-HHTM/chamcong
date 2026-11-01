@@ -11,9 +11,8 @@
     <!-- Firebase SDK (Modular CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB3IxA_037b2V2zTzn4sVH5NDVWDWHVICc",
             authDomain: "real-time-c79ab.firebaseapp.com",
@@ -34,15 +33,13 @@
         window.dbOnValue = onValue;
         window.dbRemove = remove;
         window.dbPush = push;
-        window.dbUpdate = update;
 
-        // Định nghĩa các hàm xem trước và xem ảnh lớn lên window trước để tránh lỗi bất đồng bộ
+        // Đưa các hàm preview ảnh lên phạm vi window từ sớm
         window.renderImagePreviews = function() {
             const imgContainer = document.getElementById('imagePreviewContainer');
-            const inputVal = document.getElementById('hinhAnh') ? document.getElementById('hinhAnh').value : '';
+            const inputVal = document.getElementById('hinhAnh')?.value || '';
             if (!imgContainer) return;
             imgContainer.innerHTML = '';
-
             if (!inputVal) return;
 
             const urls = inputVal.split(',').filter(url => url.trim() !== '');
@@ -63,9 +60,7 @@
                 removeBtn.title = "Xóa ảnh này";
                 removeBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (typeof window.removeSingleImage === 'function') {
-                        window.removeSingleImage(index);
-                    }
+                    window.removeSingleImage(index);
                 };
 
                 wrapper.appendChild(img);
@@ -81,6 +76,15 @@
                 const bsModal = new bootstrap.Modal(document.getElementById('imageModal'));
                 bsModal.show();
             }
+        };
+
+        window.removeSingleImage = function(indexToRemove) {
+            const input = document.getElementById('hinhAnh');
+            if (!input) return;
+            let urls = input.value.split(',').map(u => u.trim()).filter(u => u !== '');
+            urls.splice(indexToRemove, 1);
+            input.value = urls.join(',');
+            window.renderImagePreviews();
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -136,6 +140,26 @@
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
         }
+
+        /* Đặt độ rộng tối thiểu cho các cột trên màn hình nhỏ */
+        .col-index { width: 35px; }
+        .col-img { width: 55px; }
+        .col-ten-hang { min-width: 180px; }
+        .col-gia-ban { min-width: 100px; width: 110px; }
+        .col-ton-kho { min-width: 80px; width: 90px; }
+        .col-action { min-width: 90px; width: 90px; }
+
+        /* Tối ưu ô nhập tên hàng trong bảng */
+        .table-ten-hang-input {
+            width: 100%;
+            min-height: 38px;
+            resize: vertical;
+            font-weight: 600;
+            line-height: 1.4;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
         @media (max-width: 768px) {
             .app-header h3 { font-size: 1.1rem; }
             .btn-mobile-lg {
@@ -156,18 +180,13 @@
                 display: flex;
                 gap: 10px;
             }
-            .mobile-bottom-bar button {
-                flex: 1;
-            }
-            .table-responsive {
-                font-size: 0.85rem;
-            }
+            .mobile-bottom-bar button { flex: 1; }
+            .table-responsive { font-size: 0.85rem; }
         }
         @media (min-width: 769px) {
             .mobile-bottom-bar { display: none; }
         }
 
-        /* Vùng hiển thị ảnh xem trước ở form */
         #imagePreviewContainer {
             display: flex;
             gap: 8px;
@@ -181,17 +200,16 @@
             flex-shrink: 0;
         }
         .preview-img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid #dee2e6;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease;
         }
         .preview-img:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .btn-remove-img {
             position: absolute;
@@ -204,57 +222,10 @@
             width: 20px;
             height: 20px;
             font-size: 12px;
-            line-height: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Styling cho bảng danh sách chỉnh sửa trực tiếp */
-        .table-input {
-            width: 100%;
-            min-width: 80px;
-            padding: 4px 8px;
-            font-size: 0.9rem;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-        }
-        .table-input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
-        }
-
-        /* Textarea co giãn giúp thể hiện trọn vẹn Tên Hàng không bị rút gọn */
-        .table-textarea {
-            width: 100%;
-            padding: 4px 8px;
-            font-size: 0.9rem;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            resize: none;
-            overflow: hidden;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .table-textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
-        }
-        .table-thumb-img {
-            width: 44px;
-            height: 44px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .table-thumb-img:hover {
-            opacity: 0.8;
         }
     </style>
 </head>
@@ -288,11 +259,12 @@
 
 <div class="container-fluid px-3 px-md-4">
     <div class="row g-4">
-        <!-- Form Nhập Liệu / Sửa -->
+        <!-- Form Nhập Liệu -->
         <div class="col-12 col-lg-5 col-xl-4">
             <div class="card card-custom p-3 p-md-4 sticky-top" style="top: 20px; z-index: 100;">
                 <form id="productForm" onsubmit="submitForm(event)">
                     <input type="hidden" id="editIndex" value="-1">
+                    <input type="hidden" id="giaVon" value="0">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Hình ảnh (URL hoặc chụp ảnh)</label>
@@ -331,7 +303,6 @@
                             <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
                         </div>
 
-                        <!-- Cấu trúc: Giá bán -> Tồn kho (ở giữa) (Ẩn Giá vốn) -->
                         <div class="col-6">
                             <label class="form-label">Giá bán <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="giaBan" value="0" required>
@@ -340,8 +311,6 @@
                             <label class="form-label">Tồn kho</label>
                             <input type="number" class="form-control" id="tonKho" value="0" required>
                         </div>
-                        <!-- Giá vốn ẩn trên giao diện nhưng mặc định gửi 0 -->
-                        <input type="hidden" id="giaVon" value="0">
 
                         <div class="col-12 mt-4 d-grid gap-2">
                             <button type="submit" id="submitBtn" class="btn btn-primary btn-mobile-lg fw-bold shadow-sm">
@@ -372,12 +341,12 @@
                     <table class="table table-hover align-middle border-top">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
-                                <th>Ảnh</th>
-                                <th>Tên hàng</th>
-                                <th style="width: 140px;">Giá bán</th>
-                                <th style="width: 110px;">Tồn kho</th>
-                                <th class="text-center" style="width: 100px;">Thao tác</th>
+                                <th class="col-index">#</th>
+                                <th class="col-img">Ảnh</th>
+                                <th class="col-ten-hang">Tên hàng</th>
+                                <th class="col-gia-ban">Giá bán</th>
+                                <th class="col-ton-kho">Tồn kho</th>
+                                <th class="col-action text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -416,7 +385,6 @@
   </div>
 </div>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -440,26 +408,6 @@
         });
     }
 
-    function renderImagePreviews() {
-        if (typeof window.renderImagePreviews === 'function') {
-            window.renderImagePreviews();
-        }
-    }
-
-    function openImageModal(url) {
-        if (typeof window.openImageModal === 'function') {
-            window.openImageModal(url);
-        }
-    }
-
-    window.removeSingleImage = function(indexToRemove) {
-        const input = document.getElementById('hinhAnh');
-        let urls = input.value.split(',').map(u => u.trim()).filter(u => u !== '');
-        urls.splice(indexToRemove, 1);
-        input.value = urls.join(',');
-        renderImagePreviews();
-    }
-
     async function handleCameraCapture(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -467,7 +415,7 @@
         const imgContainer = document.getElementById('imagePreviewContainer');
         const loadingText = document.createElement('div');
         loadingText.id = "imgLoadingText";
-        loadingText.innerText = "⏳ Đang tải ảnh...";
+        loadingText.innerText = "⏳ Đang tải ảnh lên hệ thống...";
         loadingText.className = "text-primary small fw-bold py-1";
         imgContainer.appendChild(loadingText);
 
@@ -489,10 +437,9 @@
                 const imageUrl = result.data.url;
                 const currentVal = document.getElementById('hinhAnh').value;
                 document.getElementById('hinhAnh').value = currentVal ? currentVal + "," + imageUrl : imageUrl;
-                
-                renderImagePreviews();
+                window.renderImagePreviews();
             } else {
-                alert("Tải ảnh thất bại!");
+                alert("Tải ảnh thất bại, vui lòng thử lại!");
             }
         } catch (error) {
             const loader = document.getElementById('imgLoadingText');
@@ -510,7 +457,7 @@
             nhomHang: document.getElementById('nhomHang').value || "Khác",
             tenHang: document.getElementById('tenHang').value.trim(),
             giaBan: parseFloat(document.getElementById('giaBan').value) || 0,
-            giaVon: parseFloat(document.getElementById('giaVon').value) || 0,
+            giaVon: 0,
             tonKho: parseFloat(document.getElementById('tonKho').value) || 0,
             khDat: 0,
             tonMin: 1,
@@ -542,7 +489,6 @@
 
         document.getElementById('tenHang').value = '';
         document.getElementById('giaBan').value = '0';
-        document.getElementById('giaVon').value = '0';
         document.getElementById('tonKho').value = '0';
         document.getElementById('hinhAnh').value = '';
         document.getElementById('imagePreviewContainer').innerHTML = '';
@@ -553,32 +499,10 @@
         setTimeout(() => listCard.classList.remove('highlight-card'), 1000);
     }
 
-    function editProduct(index) {
-        const p = products[index];
-        document.getElementById('editIndex').value = index;
-        document.getElementById('loaiHang').value = p.loaiHang;
-        document.getElementById('nhomHang').value = p.nhomHang;
-        document.getElementById('tenHang').value = p.tenHang;
-        document.getElementById('giaBan').value = p.giaBan;
-        document.getElementById('giaVon').value = p.giaVon || 0;
-        document.getElementById('tonKho').value = p.tonKho !== undefined ? p.tonKho : 0;
-        document.getElementById('hinhAnh').value = p.hinhAnh;
-        
-        renderImagePreviews();
-        
-        document.getElementById('submitBtn').innerText = "💾 Cập Nhật Lại (Enter)";
-        document.getElementById('submitBtn').className = "btn btn-warning text-white btn-mobile-lg fw-bold shadow-sm";
-        document.getElementById('cancelEditBtn').classList.remove('d-none');
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        document.getElementById('tenHang').focus();
-    }
-
     function cancelEdit() {
         document.getElementById('editIndex').value = "-1";
         document.getElementById('tenHang').value = '';
         document.getElementById('giaBan').value = '0';
-        document.getElementById('giaVon').value = '0';
         document.getElementById('tonKho').value = '0';
         document.getElementById('hinhAnh').value = '';
         document.getElementById('imagePreviewContainer').innerHTML = '';
@@ -589,41 +513,42 @@
         document.getElementById('cancelEditBtn').classList.add('d-none');
     }
 
-    // Lưu sửa đổi trực tiếp ngay trên bảng
-    function saveInlineEdit(id) {
-        const tenHang = document.getElementById(`inline-ten-${id}`).value.trim();
-        const giaBan = parseFloat(document.getElementById(`inline-giaban-${id}`).value) || 0;
-        const tonKho = parseFloat(document.getElementById(`inline-tonkho-${id}`).value) || 0;
+    function adjustTextareaHeight(el) {
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight) + 'px';
+    }
 
-        if (!tenHang) {
+    function saveInlineProduct(index) {
+        const p = products[index];
+        if (!p || !p.id) return;
+
+        const tenHangVal = document.getElementById(`inline-tenHang-${index}`).value.trim();
+        const giaBanVal = parseFloat(document.getElementById(`inline-giaBan-${index}`).value) || 0;
+        const tonKhoVal = parseFloat(document.getElementById(`inline-tonKho-${index}`).value) || 0;
+
+        if (!tenHangVal) {
             alert("Tên hàng không được để trống!");
             return;
         }
 
-        const productRef = window.dbRef(window.db, 'products/' + id);
-        window.dbUpdate(productRef, {
-            tenHang: tenHang,
-            giaBan: giaBan,
-            tonKho: tonKho
-        }).then(() => {
-            const listCard = document.getElementById('listCard');
-            listCard.classList.add('highlight-card');
-            setTimeout(() => listCard.classList.remove('highlight-card'), 600);
-        });
+        const updatedItem = {
+            ...p,
+            tenHang: tenHangVal,
+            giaBan: giaBanVal,
+            giaVon: p.giaVon !== undefined ? p.giaVon : 0,
+            tonKho: tonKhoVal
+        };
+        delete updatedItem.id;
+
+        const productRef = window.dbRef(window.db, 'products/' + p.id);
+        window.dbSet(productRef, updatedItem);
     }
 
-    // Bấm Enter ở ô bất kỳ trên dòng để lưu trực tiếp
-    function handleInlineKeyDown(event, id) {
+    function handleInlineKeyDown(event, index) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            saveInlineEdit(id);
+            saveInlineProduct(index);
         }
-    }
-
-    // Tự động giãn chiều cao của Textarea để thể hiện trọn vẹn Tên Hàng không bị cắt ngắn
-    function adjustTextareaHeight(el) {
-        el.style.height = 'auto';
-        el.style.height = (el.scrollHeight) + 'px';
     }
 
     function renderTable() {
@@ -648,43 +573,54 @@
         products.forEach((p, index) => {
             const tr = document.createElement('tr');
             
-            // Thumbnail ảnh sản phẩm
-            let imgHtml = '<span class="text-muted small">Không ảnh</span>';
-            if (p.hinhAnh) {
-                const firstUrl = p.hinhAnh.split(',')[0].trim();
-                if (firstUrl) {
-                    imgHtml = `<img src="${firstUrl}" class="table-thumb-img" title="Bấm để phóng to ảnh" onclick="openImageModal('${firstUrl}')">`;
-                }
-            }
+            const firstImg = p.hinhAnh ? p.hinhAnh.split(',')[0].trim() : '';
+            const imgHtml = firstImg 
+                ? `<img src="${firstImg}" class="preview-img" style="width: 45px; height: 45px;" onclick="window.openImageModal('${firstImg}')">`
+                : `<span class="text-muted small">N/A</span>`;
 
             tr.innerHTML = `
                 <td class="fw-bold">${index + 1}</td>
                 <td>${imgHtml}</td>
                 <td>
-                    <textarea id="inline-ten-${p.id}" class="table-textarea fw-semibold text-dark mb-1" rows="1" oninput="adjustTextareaHeight(this)" onkeydown="handleInlineKeyDown(event, '${p.id}')">${p.tenHang}</textarea>
+                    <textarea 
+                        id="inline-tenHang-${index}" 
+                        class="form-control form-control-sm table-ten-hang-input" 
+                        rows="1"
+                        oninput="adjustTextareaHeight(this)"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
+                    >${p.tenHang || ''}</textarea>
                 </td>
                 <td>
-                    <input type="number" id="inline-giaban-${p.id}" class="table-input text-success fw-bold" value="${p.giaBan}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                    <input 
+                        type="number" 
+                        id="inline-giaBan-${index}" 
+                        class="form-control form-control-sm text-success fw-bold" 
+                        value="${p.giaBan || 0}"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
+                    >
                 </td>
                 <td>
-                    <input type="number" id="inline-tonkho-${p.id}" class="table-input fw-bold" value="${p.tonKho !== undefined ? p.tonKho : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                    <input 
+                        type="number" 
+                        id="inline-tonKho-${index}" 
+                        class="form-control form-control-sm fw-bold" 
+                        value="${p.tonKho !== undefined ? p.tonKho : 0}"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
+                    >
                 </td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="saveInlineEdit('${p.id}')" title="Lưu dòng này (Enter)">
-                        <i class="bi bi-check-lg"></i>
+                    <button type="button" class="btn btn-outline-success btn-sm me-1" onclick="saveInlineProduct(${index})" title="Lưu nhanh">
+                        💾
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProduct(${index})" title="Xóa">
-                        <i class="bi bi-trash"></i>
+                        🗑️
                     </button>
                 </td>
             `;
             tbody.appendChild(tr);
 
-            // Tự dãn dòng sau khi chèn HTML
-            const textareaEl = tr.querySelector(`#inline-ten-${p.id}`);
-            if (textareaEl) {
-                setTimeout(() => adjustTextareaHeight(textareaEl), 0);
-            }
+            const textareaEl = tr.querySelector(`#inline-tenHang-${index}`);
+            if (textareaEl) adjustTextareaHeight(textareaEl);
         });
     }
 
@@ -696,16 +632,12 @@
                 window.dbSet(productRef, null);
             }
         }
-        if (parseInt(document.getElementById('editIndex').value, 10) === index) {
-            cancelEdit();
-        }
     }
 
     function clearAllProducts() {
         if (confirm("Bạn có chắc chắn muốn xóa hết danh sách trên hệ thống không?")) {
             const productsRef = window.dbRef(window.db, 'products');
             window.dbSet(productsRef, null);
-            cancelEdit();
         }
     }
 
@@ -741,18 +673,18 @@
             row["Tên hàng trên hóa đơn điện tử"] = "";
             row["Thương hiệu"] = "";
             row["Giá bán"] = p.giaBan;
-            row["Giá vốn"] = p.giaVon || 0;
+            row["Giá vốn"] = p.giaVon !== undefined ? p.giaVon : 0;
             row["Tồn kho"] = p.tonKho;
-            row["KH đặt"] = p.khDat;
+            row["KH đặt"] = p.khDat || 0;
             row["Dự kiến hết hàng"] = "";
-            row["Tồn nhỏ nhất"] = p.tonMin;
-            row["Tồn lớn nhất"] = p.tonMax;
+            row["Tồn nhỏ nhất"] = p.tonMin || 1;
+            row["Tồn lớn nhất"] = p.tonMax || 999999999;
             row["Thuộc tính"] = "";
             row["Mã HH Liên quan"] = "";
-            row["Hình ảnh (url1,url2...)"] = p.hinhAnh;
-            row["Trọng lượng"] = p.trongLuong;
-            row["Đang kinh doanh"] = p.dangKinhDoanh;
-            row["Được bán trực tiếp"] = p.banTrucTiep;
+            row["Hình ảnh (url1,url2...)"] = p.hinhAnh || "";
+            row["Trọng lượng"] = p.trongLuong || 0;
+            row["Đang kinh doanh"] = p.dangKinhDoanh !== undefined ? p.dangKinhDoanh : 1;
+            row["Được bán trực tiếp"] = p.banTrucTiep !== undefined ? p.banTrucTiep : 1;
             row["Mô tả"] = "";
             row["Mẫu ghi chú"] = "";
             row["Vị trí"] = "";
