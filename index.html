@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nhập Liệu Hàng Hóa - Chuẩn KiotViet</title>
+    <title>Nhập Liệu & Quản Lý Hàng Hóa - Chuẩn KiotViet</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -11,7 +11,7 @@
     <!-- Firebase SDK (Modular CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // Cấu hình Firebase
         const firebaseConfig = {
@@ -34,13 +34,13 @@
         window.dbOnValue = onValue;
         window.dbRemove = remove;
         window.dbPush = push;
+        window.dbUpdate = update;
 
         document.addEventListener("DOMContentLoaded", () => {
             if (typeof initRealtimeDatabase === "function") {
                 initRealtimeDatabase();
             }
             
-            // Lắng nghe sự thay đổi khi dán/nhập URL thủ công vào ô input hình ảnh
             const hinhAnhInput = document.getElementById('hinhAnh');
             if (hinhAnhInput) {
                 hinhAnhInput.addEventListener('input', renderImagePreviews);
@@ -163,8 +163,31 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .btn-remove-img:hover {
-            background: #bb2d3b;
+        
+        /* Chỉnh sửa ô nhập liệu trực tiếp trên bảng */
+        .table-input {
+            width: 100%;
+            min-width: 80px;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+        }
+        .table-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+        }
+        .table-thumb-img {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+        }
+        .table-thumb-img:hover {
+            opacity: 0.85;
         }
     </style>
 </head>
@@ -241,7 +264,7 @@
                             <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
                         </div>
 
-                        <!-- Cấu trúc lại: Giá bán -> Tồn kho (ở giữa) -> Giá vốn -->
+                        <!-- Cấu trúc: Giá bán -> Tồn kho (ở giữa) -> Giá vốn -->
                         <div class="col-4">
                             <label class="form-label">Giá bán <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="giaBan" value="0" required>
@@ -285,16 +308,17 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
+                                <th>Ảnh</th>
                                 <th>Tên hàng / Nhóm</th>
-                                <th>Giá bán</th>
-                                <th>Tồn kho</th>
-                                <th>Trạng thái</th>
-                                <th class="text-center">Thao tác</th>
+                                <th style="width: 110px;">Giá bán</th>
+                                <th style="width: 90px;">Tồn kho</th>
+                                <th style="width: 110px;">Giá vốn</th>
+                                <th class="text-center" style="width: 100px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
+                                <td colspan="7" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     Đang tải dữ liệu từ hệ thống...
                                 </td>
@@ -408,7 +432,7 @@
         const imgContainer = document.getElementById('imagePreviewContainer');
         const loadingText = document.createElement('div');
         loadingText.id = "imgLoadingText";
-        loadingText.innerText = "⏳ Đang tải ảnh lên hệ thống...";
+        loadingText.innerText = "⏳ Đang tải ảnh...";
         loadingText.className = "text-primary small fw-bold py-1";
         imgContainer.appendChild(loadingText);
 
@@ -433,7 +457,7 @@
                 
                 renderImagePreviews();
             } else {
-                alert("Tải ảnh thất bại, vui lòng thử lại!");
+                alert("Tải ảnh thất bại!");
             }
         } catch (error) {
             const loader = document.getElementById('imgLoadingText');
@@ -507,7 +531,6 @@
         
         renderImagePreviews();
         
-        // Cập nhật text nút để nhận diện có Enter
         document.getElementById('submitBtn').innerText = "💾 Cập Nhật Lại (Enter)";
         document.getElementById('submitBtn').className = "btn btn-warning text-white btn-mobile-lg fw-bold shadow-sm";
         document.getElementById('cancelEditBtn').classList.remove('d-none');
@@ -531,6 +554,39 @@
         document.getElementById('cancelEditBtn').classList.add('d-none');
     }
 
+    // Lưu chỉnh sửa trực tiếp trên bảng
+    function saveInlineEdit(id) {
+        const tenHang = document.getElementById(`inline-ten-${id}`).value.trim();
+        const giaBan = parseFloat(document.getElementById(`inline-giaban-${id}`).value) || 0;
+        const tonKho = parseFloat(document.getElementById(`inline-tonkho-${id}`).value) || 0;
+        const giaVon = parseFloat(document.getElementById(`inline-giavon-${id}`).value) || 0;
+
+        if (!tenHang) {
+            alert("Tên hàng không được để trống!");
+            return;
+        }
+
+        const productRef = window.dbRef(window.db, 'products/' + id);
+        window.dbUpdate(productRef, {
+            tenHang: tenHang,
+            giaBan: giaBan,
+            tonKho: tonKho,
+            giaVon: giaVon
+        }).then(() => {
+            const listCard = document.getElementById('listCard');
+            listCard.classList.add('highlight-card');
+            setTimeout(() => listCard.classList.remove('highlight-card'), 600);
+        });
+    }
+
+    // Xử lý sự kiện bấm Enter trên dòng sản phẩm ở bảng
+    function handleInlineKeyDown(event, id) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            saveInlineEdit(id);
+        }
+    }
+
     function renderTable() {
         const count = products.length;
         document.getElementById('rowCount').innerText = count;
@@ -540,7 +596,7 @@
         if (count === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">
+                    <td colspan="7" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                         Chưa có hàng hóa nào. Hãy nhập thông tin!
                     </td>
@@ -552,18 +608,35 @@
         tbody.innerHTML = '';
         products.forEach((p, index) => {
             const tr = document.createElement('tr');
+            
+            // Xử lý hiển thị ảnh thu nhỏ
+            let imgHtml = '<span class="text-muted small">Không ảnh</span>';
+            if (p.hinhAnh) {
+                const firstUrl = p.hinhAnh.split(',')[0].trim();
+                if (firstUrl) {
+                    imgHtml = `<img src="${firstUrl}" class="table-thumb-img" title="Bấm để phóng to ảnh" onclick="openImageModal('${firstUrl}')">`;
+                }
+            }
+
             tr.innerHTML = `
                 <td class="fw-bold">${index + 1}</td>
+                <td>${imgHtml}</td>
                 <td>
-                    <div class="fw-bold text-dark">${p.tenHang}</div>
-                    <small class="text-muted"><i class="bi bi-tag"></i> ${p.nhomHang || 'N/A'}</small>
+                    <input type="text" id="inline-ten-${p.id}" class="table-input fw-semibold text-dark mb-1" value="${p.tenHang.replace(/"/g, '&quot;')}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                    <div><small class="text-muted"><i class="bi bi-tag"></i> ${p.nhomHang || 'Khác'}</small></div>
                 </td>
-                <td class="text-success fw-bold">${p.giaBan.toLocaleString()} đ</td>
-                <td><span class="badge bg-light text-dark border">${p.tonKho}</span></td>
-                <td><span class="badge bg-success-subtle text-success">Đang KD</span></td>
+                <td>
+                    <input type="number" id="inline-giaban-${p.id}" class="table-input text-success fw-bold" value="${p.giaBan}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                </td>
+                <td>
+                    <input type="number" id="inline-tonkho-${p.id}" class="table-input fw-bold" value="${p.tonKho !== undefined ? p.tonKho : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                </td>
+                <td>
+                    <input type="number" id="inline-giavon-${p.id}" class="table-input text-secondary" value="${p.giaVon !== undefined ? p.giaVon : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
+                </td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="editProduct(${index})" title="Sửa">
-                        <i class="bi bi-pencil-square"></i>
+                    <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="saveInlineEdit('${p.id}')" title="Lưu lại dòng này (Enter)">
+                        <i class="bi bi-check-lg"></i>
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProduct(${index})" title="Xóa">
                         <i class="bi bi-trash"></i>
