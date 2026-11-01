@@ -264,19 +264,17 @@
                             <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
                         </div>
 
-                        <!-- Cấu trúc: Giá bán -> Tồn kho (ở giữa) -> Giá vốn -->
-                        <div class="col-4">
+                        <!-- Cấu trúc: Giá bán -> Tồn kho (Ẩn giá vốn) -->
+                        <div class="col-6">
                             <label class="form-label">Giá bán <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="giaBan" value="0" required>
                         </div>
-                        <div class="col-4">
+                        <div class="col-6">
                             <label class="form-label">Tồn kho</label>
                             <input type="number" class="form-control" id="tonKho" value="0" required>
                         </div>
-                        <div class="col-4">
-                            <label class="form-label">Giá vốn</label>
-                            <input type="number" class="form-control" id="giaVon" value="0" required>
-                        </div>
+                        <!-- Ẩn ô nhập Giá vốn -->
+                        <input type="hidden" id="giaVon" value="0">
 
                         <div class="col-12 mt-4 d-grid gap-2">
                             <button type="submit" id="submitBtn" class="btn btn-primary btn-mobile-lg fw-bold shadow-sm">
@@ -310,15 +308,14 @@
                                 <th>#</th>
                                 <th>Ảnh</th>
                                 <th>Tên hàng / Nhóm</th>
-                                <th style="width: 110px;">Giá bán</th>
-                                <th style="width: 90px;">Tồn kho</th>
-                                <th style="width: 110px;">Giá vốn</th>
+                                <th style="width: 140px;">Giá bán</th>
+                                <th style="width: 110px;">Tồn kho</th>
                                 <th class="text-center" style="width: 100px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
+                                <td colspan="6" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     Đang tải dữ liệu từ hệ thống...
                                 </td>
@@ -559,7 +556,11 @@
         const tenHang = document.getElementById(`inline-ten-${id}`).value.trim();
         const giaBan = parseFloat(document.getElementById(`inline-giaban-${id}`).value) || 0;
         const tonKho = parseFloat(document.getElementById(`inline-tonkho-${id}`).value) || 0;
-        const giaVon = parseFloat(document.getElementById(`inline-giavon-${id}`).value) || 0;
+    // Lưu chỉnh sửa trực tiếp trên bảng (Bỏ cập nhật giá vốn)
+    function saveInlineEdit(id) {
+        const tenHang = document.getElementById(`inline-ten-${id}`).value.trim();
+        const giaBan = parseFloat(document.getElementById(`inline-giaban-${id}`).value) || 0;
+        const tonKho = parseFloat(document.getElementById(`inline-tonkho-${id}`).value) || 0;
 
         if (!tenHang) {
             alert("Tên hàng không được để trống!");
@@ -570,8 +571,7 @@
         window.dbUpdate(productRef, {
             tenHang: tenHang,
             giaBan: giaBan,
-            tonKho: tonKho,
-            giaVon: giaVon
+            tonKho: tonKho
         }).then(() => {
             const listCard = document.getElementById('listCard');
             listCard.classList.add('highlight-card');
@@ -596,7 +596,7 @@
         if (count === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">
+                    <td colspan="6" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                         Chưa có hàng hóa nào. Hãy nhập thông tin!
                     </td>
@@ -630,9 +630,6 @@
                 </td>
                 <td>
                     <input type="number" id="inline-tonkho-${p.id}" class="table-input fw-bold" value="${p.tonKho !== undefined ? p.tonKho : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
-                </td>
-                <td>
-                    <input type="number" id="inline-giavon-${p.id}" class="table-input text-secondary" value="${p.giaVon !== undefined ? p.giaVon : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
                 </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="saveInlineEdit('${p.id}')" title="Lưu lại dòng này (Enter)">
