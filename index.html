@@ -374,7 +374,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Ảnh</th>
-                                <th>Tên hàng / Nhóm</th>
+                                <th>Tên hàng</th>
                                 <th style="width: 140px;">Giá bán</th>
                                 <th style="width: 110px;">Tồn kho</th>
                                 <th class="text-center" style="width: 100px;">Thao tác</th>
@@ -662,7 +662,6 @@
                 <td>${imgHtml}</td>
                 <td>
                     <textarea id="inline-ten-${p.id}" class="table-textarea fw-semibold text-dark mb-1" rows="1" oninput="adjustTextareaHeight(this)" onkeydown="handleInlineKeyDown(event, '${p.id}')">${p.tenHang}</textarea>
-                    <div><small class="text-muted"><i class="bi bi-tag"></i> ${p.nhomHang || 'Khác'}</small></div>
                 </td>
                 <td>
                     <input type="number" id="inline-giaban-${p.id}" class="table-input text-success fw-bold" value="${p.giaBan}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
