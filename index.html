@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nhập Liệu & Quản Lý Hàng Hóa - Chuẩn KiotViet</title>
+    <title>Nhập Liệu Hàng Hóa - Chuẩn KiotViet</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -36,7 +36,7 @@
         window.dbPush = push;
         window.dbUpdate = update;
 
-        // Định nghĩa hàm renderImagePreviews vào window trước để tránh lỗi hoisting với ES module
+        // Định nghĩa các hàm xem trước và xem ảnh lớn lên window trước để tránh lỗi bất đồng bộ
         window.renderImagePreviews = function() {
             const imgContainer = document.getElementById('imagePreviewContainer');
             const inputVal = document.getElementById('hinhAnh') ? document.getElementById('hinhAnh').value : '';
@@ -54,7 +54,7 @@
                 img.src = url.trim();
                 img.className = 'preview-img';
                 img.title = "Bấm để xem ảnh lớn";
-                img.onclick = () => openImageModal(url.trim());
+                img.onclick = () => window.openImageModal(url.trim());
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -63,13 +63,24 @@
                 removeBtn.title = "Xóa ảnh này";
                 removeBtn.onclick = (e) => {
                     e.stopPropagation();
-                    removeSingleImage(index);
+                    if (typeof window.removeSingleImage === 'function') {
+                        window.removeSingleImage(index);
+                    }
                 };
 
                 wrapper.appendChild(img);
                 wrapper.appendChild(removeBtn);
                 imgContainer.appendChild(wrapper);
             });
+        };
+
+        window.openImageModal = function(url) {
+            const modalImg = document.getElementById('modalImageDisplay');
+            if (modalImg) {
+                modalImg.src = url;
+                const bsModal = new bootstrap.Modal(document.getElementById('imageModal'));
+                bsModal.show();
+            }
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -156,6 +167,7 @@
             .mobile-bottom-bar { display: none; }
         }
 
+        /* Vùng hiển thị ảnh xem trước ở form */
         #imagePreviewContainer {
             display: flex;
             gap: 8px;
@@ -199,8 +211,8 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        
-        /* Chỉnh sửa ô nhập liệu trực tiếp trên bảng */
+
+        /* Styling cho bảng danh sách chỉnh sửa trực tiếp */
         .table-input {
             width: 100%;
             min-width: 80px;
@@ -214,7 +226,8 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
         }
-        /* Textarea co giãn hiển thị trọn vẹn tên hàng không bị rút gọn */
+
+        /* Textarea co giãn giúp thể hiện trọn vẹn Tên Hàng không bị rút gọn */
         .table-textarea {
             width: 100%;
             padding: 4px 8px;
@@ -238,9 +251,10 @@
             border-radius: 6px;
             border: 1px solid #dee2e6;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
         .table-thumb-img:hover {
-            opacity: 0.85;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -317,7 +331,7 @@
                             <input type="text" class="form-control form-control-lg fw-semibold text-primary" id="tenHang" placeholder="Nhập tên sản phẩm..." required autofocus>
                         </div>
 
-                        <!-- Cấu trúc: Giá bán -> Tồn kho (Ẩn giá vốn) -->
+                        <!-- Cấu trúc: Giá bán -> Tồn kho (ở giữa) (Ẩn Giá vốn) -->
                         <div class="col-6">
                             <label class="form-label">Giá bán <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="giaBan" value="0" required>
@@ -326,7 +340,7 @@
                             <label class="form-label">Tồn kho</label>
                             <input type="number" class="form-control" id="tonKho" value="0" required>
                         </div>
-                        <!-- Ẩn ô nhập Giá vốn -->
+                        <!-- Giá vốn ẩn trên giao diện nhưng mặc định gửi 0 -->
                         <input type="hidden" id="giaVon" value="0">
 
                         <div class="col-12 mt-4 d-grid gap-2">
@@ -426,7 +440,6 @@
         });
     }
 
-    // Đã chuyển hàm renderImagePreviews lên script module để khởi tạo sớm
     function renderImagePreviews() {
         if (typeof window.renderImagePreviews === 'function') {
             window.renderImagePreviews();
@@ -434,13 +447,12 @@
     }
 
     function openImageModal(url) {
-        const modalImg = document.getElementById('modalImageDisplay');
-        modalImg.src = url;
-        const bsModal = new bootstrap.Modal(document.getElementById('imageModal'));
-        bsModal.show();
+        if (typeof window.openImageModal === 'function') {
+            window.openImageModal(url);
+        }
     }
 
-    function removeSingleImage(indexToRemove) {
+    window.removeSingleImage = function(indexToRemove) {
         const input = document.getElementById('hinhAnh');
         let urls = input.value.split(',').map(u => u.trim()).filter(u => u !== '');
         urls.splice(indexToRemove, 1);
@@ -548,7 +560,7 @@
         document.getElementById('nhomHang').value = p.nhomHang;
         document.getElementById('tenHang').value = p.tenHang;
         document.getElementById('giaBan').value = p.giaBan;
-        document.getElementById('giaVon').value = p.giaVon;
+        document.getElementById('giaVon').value = p.giaVon || 0;
         document.getElementById('tonKho').value = p.tonKho !== undefined ? p.tonKho : 0;
         document.getElementById('hinhAnh').value = p.hinhAnh;
         
@@ -577,7 +589,7 @@
         document.getElementById('cancelEditBtn').classList.add('d-none');
     }
 
-    // Lưu chỉnh sửa trực tiếp trên bảng
+    // Lưu sửa đổi trực tiếp ngay trên bảng
     function saveInlineEdit(id) {
         const tenHang = document.getElementById(`inline-ten-${id}`).value.trim();
         const giaBan = parseFloat(document.getElementById(`inline-giaban-${id}`).value) || 0;
@@ -600,7 +612,7 @@
         });
     }
 
-    // Xử lý sự kiện bấm Enter trên dòng sản phẩm ở bảng (Shift+Enter để xuống dòng trong tên hàng nếu muốn)
+    // Bấm Enter ở ô bất kỳ trên dòng để lưu trực tiếp
     function handleInlineKeyDown(event, id) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -608,7 +620,7 @@
         }
     }
 
-    // Tự điều chỉnh chiều cao của textarea tên hàng để hiển thị đầy đủ văn bản
+    // Tự động giãn chiều cao của Textarea để thể hiện trọn vẹn Tên Hàng không bị cắt ngắn
     function adjustTextareaHeight(el) {
         el.style.height = 'auto';
         el.style.height = (el.scrollHeight) + 'px';
@@ -636,7 +648,7 @@
         products.forEach((p, index) => {
             const tr = document.createElement('tr');
             
-            // Xử lý hiển thị ảnh thu nhỏ
+            // Thumbnail ảnh sản phẩm
             let imgHtml = '<span class="text-muted small">Không ảnh</span>';
             if (p.hinhAnh) {
                 const firstUrl = p.hinhAnh.split(',')[0].trim();
@@ -659,7 +671,7 @@
                     <input type="number" id="inline-tonkho-${p.id}" class="table-input fw-bold" value="${p.tonKho !== undefined ? p.tonKho : 0}" onkeydown="handleInlineKeyDown(event, '${p.id}')">
                 </td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="saveInlineEdit('${p.id}')" title="Lưu lại dòng này (Enter)">
+                    <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="saveInlineEdit('${p.id}')" title="Lưu dòng này (Enter)">
                         <i class="bi bi-check-lg"></i>
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProduct(${index})" title="Xóa">
@@ -669,7 +681,7 @@
             `;
             tbody.appendChild(tr);
 
-            // Tự động điều chỉnh chiều cao của textarea sau khi render
+            // Tự dãn dòng sau khi chèn HTML
             const textareaEl = tr.querySelector(`#inline-ten-${p.id}`);
             if (textareaEl) {
                 setTimeout(() => adjustTextareaHeight(textareaEl), 0);
@@ -678,4 +690,84 @@
     }
 
     function removeProduct(index) {
-<!-- ... existing code -->
+        const p = products[index];
+        if (p && p.id) {
+            if (confirm(`Bạn có chắc muốn xóa sản phẩm "${p.tenHang}" không?`)) {
+                const productRef = window.dbRef(window.db, 'products/' + p.id);
+                window.dbSet(productRef, null);
+            }
+        }
+        if (parseInt(document.getElementById('editIndex').value, 10) === index) {
+            cancelEdit();
+        }
+    }
+
+    function clearAllProducts() {
+        if (confirm("Bạn có chắc chắn muốn xóa hết danh sách trên hệ thống không?")) {
+            const productsRef = window.dbRef(window.db, 'products');
+            window.dbSet(productsRef, null);
+            cancelEdit();
+        }
+    }
+
+    function downloadTemplate() {
+        let headers = [
+            "Loại hàng", "Nhóm hàng(3 Cấp)", "Mã hàng", "Mã vạch", "Tên hàng", 
+            "Tên hàng trên hóa đơn điện tử", "Thương hiệu", "Giá bán", "Giá vốn", 
+            "Tồn kho", "KH đặt", "Dự kiến hết hàng", "Tồn nhỏ nhất", "Tồn lớn nhất", 
+            "Thuộc tính", "Mã HH Liên quan", "Hình ảnh (url1,url2...)", "Trọng lượng", 
+            "Đang kinh doanh", "Được bán trực tiếp", "Mô tả", "Mẫu ghi chú", 
+            "Vị trí", "Hàng thành phần", "Thời gian tạo"
+        ];
+        let ws = XLSX.utils.aoa_to_sheet([headers]);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Products");
+        XLSX.writeFile(wb, "FileMau_KiotViet.xlsx");
+    }
+    
+    function exportToExcel() {
+        if (products.length === 0) {
+            alert("Chưa có dữ liệu hàng hóa để xuất Excel!");
+            return;
+        }
+
+        let exportData = products.map((p) => {
+            let formattedDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            let row = {};
+            row["Loại hàng"] = p.loaiHang;
+            row["Nhóm hàng(3 Cấp)"] = p.nhomHang;
+            row["Mã hàng"] = "";
+            row["Mã vạch"] = "";
+            row["Tên hàng"] = p.tenHang;
+            row["Tên hàng trên hóa đơn điện tử"] = "";
+            row["Thương hiệu"] = "";
+            row["Giá bán"] = p.giaBan;
+            row["Giá vốn"] = p.giaVon || 0;
+            row["Tồn kho"] = p.tonKho;
+            row["KH đặt"] = p.khDat;
+            row["Dự kiến hết hàng"] = "";
+            row["Tồn nhỏ nhất"] = p.tonMin;
+            row["Tồn lớn nhất"] = p.tonMax;
+            row["Thuộc tính"] = "";
+            row["Mã HH Liên quan"] = "";
+            row["Hình ảnh (url1,url2...)"] = p.hinhAnh;
+            row["Trọng lượng"] = p.trongLuong;
+            row["Đang kinh doanh"] = p.dangKinhDoanh;
+            row["Được bán trực tiếp"] = p.banTrucTiep;
+            row["Mô tả"] = "";
+            row["Mẫu ghi chú"] = "";
+            row["Vị trí"] = "";
+            row["Hàng thành phần"] = "";
+            row["Thời gian tạo"] = formattedDate;
+            return row;
+        });
+
+        let ws = XLSX.utils.json_to_sheet(exportData);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Products");
+        let todayStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        XLSX.writeFile(wb, `Products_KV${todayStr}.xlsx`);
+    }
+</script>
+</body>
+</html>
