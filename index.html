@@ -34,7 +34,6 @@
         window.dbRemove = remove;
         window.dbPush = push;
 
-        // Đưa các hàm preview ảnh lên phạm vi window
         window.renderImagePreviews = function() {
             const imgContainer = document.getElementById('imagePreviewContainer');
             const inputVal = document.getElementById('hinhAnh')?.value || '';
@@ -146,7 +145,7 @@
         .col-ten-hang { min-width: 180px; }
         .col-gia-ban { min-width: 100px; width: 110px; }
         .col-ton-kho { min-width: 80px; width: 90px; }
-        .col-action { min-width: 50px; width: 50px; }
+        .col-action { min-width: 75px; width: 75px; }
 
         .table-ten-hang-input {
             width: 100%;
@@ -161,10 +160,10 @@
         @media (max-width: 768px) {
             .app-header h3 { font-size: 1.1rem; }
             .btn-mobile-lg {
-                padding: 12px;
-                font-size: 1rem;
+                padding: 10px 8px;
+                font-size: 0.85rem;
                 font-weight: 600;
-                border-radius: 12px;
+                border-radius: 10px;
             }
             .mobile-bottom-bar {
                 position: fixed;
@@ -176,7 +175,7 @@
                 padding: 10px 16px;
                 z-index: 1000;
                 display: flex;
-                gap: 10px;
+                gap: 8px;
             }
             .mobile-bottom-bar button { flex: 1; }
             .table-responsive { font-size: 0.85rem; }
@@ -243,7 +242,11 @@
                 <span style="font-size: 0.75rem; color: #6c757d; display: block;">Tổng số lượng</span>
                 <span id="topRowCount" style="font-size: 1.1rem;">0</span> sản phẩm
             </div>
+            <!-- Nhóm nút trên Desktop -->
             <div class="d-none d-md-flex gap-2">
+                <button class="btn btn-info text-white fw-semibold rounded-3 px-3" onclick="saveAllManual()">
+                    <i class="bi bi-save"></i> Lưu Tất Cả
+                </button>
                 <button class="btn btn-warning text-white fw-semibold rounded-3 px-3" onclick="downloadTemplate()">
                     <i class="bi bi-file-earmark-excel"></i> File Mẫu
                 </button>
@@ -344,7 +347,7 @@
                                 <th class="col-ten-hang">Tên hàng</th>
                                 <th class="col-gia-ban">Giá bán</th>
                                 <th class="col-ton-kho">Tồn kho</th>
-                                <th class="col-action text-center">Xóa</th>
+                                <th class="col-action text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -362,12 +365,16 @@
     </div>
 </div>
 
+<!-- Thanh điều hướng dưới cùng cho Mobile -->
 <div class="mobile-bottom-bar">
+    <button class="btn btn-info text-white fw-bold btn-mobile-lg" onclick="saveAllManual()">
+        💾 Lưu
+    </button>
     <button class="btn btn-warning text-white fw-bold btn-mobile-lg" onclick="downloadTemplate()">
-        📄 File Mẫu
+        📄 Mẫu
     </button>
     <button class="btn btn-success fw-bold btn-mobile-lg" onclick="exportToExcel()">
-        📥 Xuất Excel KV
+        📥 Xuất Excel
     </button>
 </div>
 
@@ -387,7 +394,6 @@
 
 <script>
     let products = [];
-    let autoSaveTimer = null;
 
     function initRealtimeDatabase() {
         const productsRef = window.dbRef(window.db, 'products');
@@ -517,34 +523,54 @@
         el.style.height = (el.scrollHeight) + 'px';
     }
 
-    // Hàm tự động lưu sau 400ms kể từ khi người dùng dừng gõ/thay đổi
-    function autoSaveInlineProduct(index) {
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            const p = products[index];
-            if (!p || !p.id) return;
+    function saveSingleInline(index) {
+        const p = products[index];
+        if (!p || !p.id) return;
 
-            const tenHangVal = document.getElementById(`inline-tenHang-${index}`)?.value.trim();
-            const giaBanVal = parseFloat(document.getElementById(`inline-giaBan-${index}`)?.value) || 0;
-            const tonKhoVal = parseFloat(document.getElementById(`inline-tonKho-${index}`)?.value) || 0;
+        const tenHangVal = document.getElementById(`inline-tenHang-${index}`)?.value.trim();
+        const giaBanVal = parseFloat(document.getElementById(`inline-giaBan-${index}`)?.value) || 0;
+        const tonKhoVal = parseFloat(document.getElementById(`inline-tonKho-${index}`)?.value) || 0;
 
-            if (!tenHangVal) return;
+        if (!tenHangVal) {
+            alert("Tên hàng không được để trống!");
+            return;
+        }
 
-            // Kiểm tra xem có dữ liệu nào bị thay đổi thật không mới ghi đè
-            if (p.tenHang !== tenHangVal || p.giaBan !== giaBanVal || p.tonKho !== tonKhoVal) {
-                const updatedItem = {
-                    ...p,
-                    tenHang: tenHangVal,
-                    giaBan: giaBanVal,
-                    giaVon: p.giaVon !== undefined ? p.giaVon : 0,
-                    tonKho: tonKhoVal
-                };
-                delete updatedItem.id;
+        const updatedItem = {
+            ...p,
+            tenHang: tenHangVal,
+            giaBan: giaBanVal,
+            giaVon: p.giaVon !== undefined ? p.giaVon : 0,
+            tonKho: tonKhoVal
+        };
+        delete updatedItem.id;
 
-                const productRef = window.dbRef(window.db, 'products/' + p.id);
-                window.dbSet(productRef, updatedItem);
-            }
-        }, 400);
+        const productRef = window.dbRef(window.db, 'products/' + p.id);
+        window.dbSet(productRef, updatedItem);
+    }
+
+    function handleInlineKeyDown(event, index) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            saveSingleInline(index);
+            alert("Đã lưu thay đổi cho sản phẩm này!");
+        }
+    }
+
+    // Nút Lưu thủ công toàn bộ danh sách hiện tại
+    function saveAllManual() {
+        if (products.length === 0) {
+            alert("Không có sản phẩm nào để lưu!");
+            return;
+        }
+        products.forEach((p, index) => {
+            saveSingleInline(index);
+        });
+        
+        alert("Đã lưu tất cả thay đổi lên hệ thống thành công!");
+        const listCard = document.getElementById('listCard');
+        listCard.classList.add('highlight-card');
+        setTimeout(() => listCard.classList.remove('highlight-card'), 1000);
     }
 
     function renderTable() {
@@ -565,11 +591,6 @@
             return;
         }
 
-        // Lưu giữ ID của phần tử đang được focus để tránh mất con trỏ khi Realtime render lại
-        const activeElId = document.activeElement ? document.activeElement.id : null;
-        const selectionStart = document.activeElement ? document.activeElement.selectionStart : null;
-        const selectionEnd = document.activeElement ? document.activeElement.selectionEnd : null;
-
         tbody.innerHTML = '';
         products.forEach((p, index) => {
             const tr = document.createElement('tr');
@@ -587,7 +608,8 @@
                         id="inline-tenHang-${index}" 
                         class="form-control form-control-sm table-ten-hang-input" 
                         rows="1"
-                        oninput="adjustTextareaHeight(this); autoSaveInlineProduct(${index});"
+                        oninput="adjustTextareaHeight(this)"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
                     >${p.tenHang || ''}</textarea>
                 </td>
                 <td>
@@ -596,7 +618,7 @@
                         id="inline-giaBan-${index}" 
                         class="form-control form-control-sm text-success fw-bold" 
                         value="${p.giaBan || 0}"
-                        oninput="autoSaveInlineProduct(${index})"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
                     >
                 </td>
                 <td>
@@ -605,10 +627,13 @@
                         id="inline-tonKho-${index}" 
                         class="form-control form-control-sm fw-bold" 
                         value="${p.tonKho !== undefined ? p.tonKho : 0}"
-                        oninput="autoSaveInlineProduct(${index})"
+                        onkeydown="handleInlineKeyDown(event, ${index})"
                     >
                 </td>
                 <td class="text-center">
+                    <button type="button" class="btn btn-outline-success btn-sm me-1" onclick="saveSingleInline(${index}); alert('Đã lưu!');" title="Lưu dòng này">
+                        💾
+                    </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProduct(${index})" title="Xóa">
                         🗑️
                     </button>
@@ -619,17 +644,6 @@
             const textareaEl = tr.querySelector(`#inline-tenHang-${index}`);
             if (textareaEl) adjustTextareaHeight(textareaEl);
         });
-
-        // Khôi phục vị trí con trỏ nhập liệu nếu người dùng đang nhập dở
-        if (activeElId) {
-            const restoredEl = document.getElementById(activeElId);
-            if (restoredEl) {
-                restoredEl.focus();
-                if (selectionStart !== null && selectionEnd !== null && restoredEl.setSelectionRange) {
-                    restoredEl.setSelectionRange(selectionStart, selectionEnd);
-                }
-            }
-        }
     }
 
     function removeProduct(index) {
@@ -687,8 +701,6 @@
             row["Dự kiến hết hàng"] = "";
             row["Tồn nhỏ nhất"] = p.tonMin || 1;
             row["Tồn lớn nhất"] = p.tonMax || 999999999;
-            row["Thuộc tính"] = "";
-            row["Mã HH Liên quan"] = "";
             row["Hình ảnh (url1,url2...)"] = p.hinhAnh || "";
             row["Trọng lượng"] = p.trongLuong || 0;
             row["Đang kinh doanh"] = p.dangKinhDoanh !== undefined ? p.dangKinhDoanh : 1;
